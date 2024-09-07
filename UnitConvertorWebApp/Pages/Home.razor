@@ -1,7 +1,12 @@
 ﻿@page "/"
+@using UnitConvertorWebApp.Pages.Converters
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudText Typo="Typo.h4">Welcome to the Unit Converter</MudText>
 
-Welcome to your new app.
+<MudText Typo="Typo.body1" Class="mb-4">Here you can convert various units</MudText>
+@* <MudDivider Class="mb-4"/> *@
+
+
+<DistanceConverter />

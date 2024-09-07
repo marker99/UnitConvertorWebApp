@@ -1,15 +1,18 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
+@inject IJSRuntime JSRuntime
+
+<MudThemeProvider Theme="MyCustomTheme" @bind-IsDarkMode="@_isDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="0">
         <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
         <MudSpacer />
-        <MudSwitch @bind-Value="_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode" />
+        <MudToggleIconButton @bind-Toggled="_isDarkMode" Color="Color.Inherit" Icon="@Icons.Material.Filled.DarkMode"
+                             ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Default" />
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
 
@@ -22,21 +25,52 @@
 
 @code {
     private bool _isDarkMode;
-    private MudThemeProvider _mudThemeProvider;
+    // private MudThemeProvider _mudThemeProvider;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+    MudTheme MyCustomTheme = new MudTheme()
         {
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
-            StateHasChanged();
+            PaletteLight = new PaletteLight()
+            {
+                AppbarBackground = Colors.Gray.Lighten4,
+                AppbarText = "#333333",
+
+            },
+
+            PaletteDark = new PaletteDark()
+            {
+                AppbarBackground = Colors.Gray.Darken4,
+                Background = "#242424"
+
+            }
+        };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var isDarkMode = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "isDarkMode");
+
+        if (string.IsNullOrEmpty(isDarkMode))
+        {
+            _isDarkMode = true;
+        }
+        else
+        {
+            _isDarkMode = bool.TryParse(isDarkMode, out var result) && result;
         }
     }
+    // protected override async Task OnAfterRenderAsync(bool firstRender)
+    // {
+    //     if (firstRender)
+    //     {
+    //         _isDarkMode = await MyCustomTheme.GetSystemPreference();
+    //         StateHasChanged();
+    //     }
+    // }
 
-    private Task OnSystemPreferenceChanged(bool newValue)
-    {
-        _isDarkMode = newValue;
-        StateHasChanged();
-        return Task.CompletedTask;
-    }
+    // private Task OnSystemPreferenceChanged(bool newValue)
+    // {
+    //     _isDarkMode = newValue;
+    //     StateHasChanged();
+    //     return Task.CompletedTask;
+    // }
 }

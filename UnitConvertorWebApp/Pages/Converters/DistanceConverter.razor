@@ -1,51 +1,55 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject IDistanceConversionService DistanceService
 
-<MudGrid Spacing="3">
-    <MudItem xs="12" sm=6 md="3">
-        <MudCard>
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Meters to Feet</MudText>
-                <MudTextField @bind-Value="meters" Label="Meters" Variant="Variant.Outlined" />
-                <MudText Typo="Typo.body1">Feet: @DistanceService.MetersToFeet(meters)</MudText>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
 
-    <MudItem xs="12" sm=6 md="3">
-        <MudCard>
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Feet to Meters</MudText>
-                <MudTextField @bind-Value="feet" Label="Feet" Variant="Variant.Outlined" />
-                <MudText Typo="Typo.body1">Meters: @DistanceService.FeetToMeters(feet)</MudText>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
+<MudText Typo="Typo.h5" Class="mb-2">Convert Distances</MudText>
 
-    <MudItem xs="12" sm=6 md="3">
-        <MudCard>
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Kilometers to Miles</MudText>
-                <MudTextField @bind-Value="kilometers" Label="Kilometers" Variant="Variant.Outlined" />
-                <MudText Typo="Typo.body1">Miles: @DistanceService.KilometersToMiles(kilometers)</MudText>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
+<MudGrid Spacing="6">
+    <ConversionComponent Title="Millimeters to Centimeters" InputLabel="Millimeters" ResultLabel="Centimeters" Convert="DistanceService.MillimetersToCentimeters" InputValue="@millimeters" />
 
-    <MudItem xs="12" sm=6 md="3">
-        <MudCard>
-            <MudCardContent>
-                <MudText Typo="Typo.h6">Miles to Kilometers</MudText>
-                <MudTextField @bind-Value="miles" Label="Miles" Variant="Variant.Outlined" />
-                <MudText Typo="Typo.body1">Kilometers: @DistanceService.MilesToKilometers(miles)</MudText>
-            </MudCardContent>
-        </MudCard>
-    </MudItem>
+    <ConversionComponent Title="Centimeters to Millimeters" InputLabel="Centimeters" ResultLabel="Millimeters" Convert="DistanceService.CentimetersToMillimeters" InputValue="@centimeters" />
+
+    <ConversionComponent Title="Centimeters to Meters" InputLabel="Centimeters" ResultLabel="Meters" Convert="DistanceService.CentimetersToMeters" InputValue="@centimeters" />
+
+    <ConversionComponent Title="Meters to Centimeters" InputLabel="Meters" ResultLabel="Centimeters" Convert="DistanceService.MetersToCentimeters" InputValue="@meters" />
+
+    <ConversionComponent Title="Meters to Feet" InputLabel="Meters" ResultLabel="Feet" Convert="DistanceService.MetersToFeet" InputValue="@meters" />
+
+    <ConversionComponent Title="Meters to Yards" InputLabel="Meters" ResultLabel="Yards" Convert="DistanceService.MetersToYards" InputValue="@meters" />
+
+    <ConversionComponent Title="Kilometers to Meters" InputLabel="Kilometers" ResultLabel="Meters" Convert="DistanceService.KilometersToMeters" InputValue="@kilometers" />
+
+    <ConversionComponent Title="Kilometers to Miles" InputLabel="Kilometers" ResultLabel="Miles" Convert="DistanceService.KilometersToMiles" InputValue="@kilometers" />
+
+    <ConversionComponent Title="Kilometers to Feet" InputLabel="Kilometers" ResultLabel="Feet" Convert="DistanceService.KilometersToFeet" InputValue="@kilometers" />
+
+    <ConversionComponent Title="Inches to Centimeters" InputLabel="Inches" ResultLabel="Centimeters" Convert="DistanceService.InchesToCentimeters" InputValue="@inches" />
+
+    <ConversionComponent Title="Feet to Meters" InputLabel="Feet" ResultLabel="Meters" Convert="DistanceService.FeetToMeters" InputValue="@feet" />
+
+    <ConversionComponent Title="Yards to Meters" InputLabel="Yards" ResultLabel="Meters" Convert="DistanceService.YardsToMeters" InputValue="@yards" />
+
+    <ConversionComponent Title="Miles to Kilometers" InputLabel="Miles" ResultLabel="Kilometers" Convert="DistanceService.MilesToKilometers" InputValue="@miles" />
+
+    <ConversionComponent Title="Feet to Kilometers" InputLabel="Feet" ResultLabel="Kilometers" Convert="DistanceService.FeetToKilometers" InputValue="@feet" />
+
+    <ConversionComponent Title="Feet to Yards" InputLabel="Feet" ResultLabel="Yards" Convert="DistanceService.FeetToYards" InputValue="@feet" />
+
+    <ConversionComponent Title="Yards to Feet" InputLabel="Yards" ResultLabel="Feet" Convert="DistanceService.YardsToFeet" InputValue="@yards" />
+
+    <ConversionComponent Title="Inches to Feet" InputLabel="Inches" ResultLabel="Feet" Convert="DistanceService.InchesToFeet" InputValue="@inches" />
+
+    <ConversionComponent Title="Feet to Inches" InputLabel="Feet" ResultLabel="Inches" Convert="DistanceService.FeetToInches" InputValue="@feet" />
 </MudGrid>
 
 @code {
+    private double millimeters;
+    private double centimeters;
     private double meters;
-    private double feet;
     private double kilometers;
+
+    private double inches;
+    private double feet;
+    private double yards;
     private double miles;
 }

@@ -1,0 +1,28 @@
+﻿@using UnitConvertorWebApp.Services
+
+<MudItem xs="12" sm="6" md="4">
+    <MudCard>
+        <MudCardContent>
+            <MudText Typo="Typo.h6">@Title</MudText>
+            <MudTextField @bind-Value="InputValue" Label="@InputLabel" Variant="Variant.Outlined" />
+            <MudText Typo="Typo.body1">@ResultLabel: @Convert(InputValue)</MudText>
+        </MudCardContent>
+    </MudCard>
+</MudItem>
+
+@code {
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? InputLabel { get; set; }
+
+    [Parameter]
+    public Func<double, double> Convert { get; set; }
+
+    [Parameter]
+    public double InputValue { get; set; }
+
+    [Parameter]
+    public string? ResultLabel { get; set; }
+}

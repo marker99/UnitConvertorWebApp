@@ -1,61 +1,74 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject IDistanceConversionService DistanceService
 
-<MudDivider Class="mt-6 mb-4" />
 
 <MudText Typo="Typo.h5" Class="mb-2">Convert Distances</MudText>
 
-<MudGrid Spacing="4">
-    <ConversionComponent Title="Millimeters to Centimeters" InputLabel="Millimeters" ResultLabel="Centimeters" Convert="DistanceService.MillimetersToCentimeters" InputValue="@millimeters" />
+<MudCard>
+    <MudCardContent>
+        <MudText Typo="Typo.h5" Class="mb-2">Distance Converter</MudText>
 
-    <ConversionComponent Title="Centimeters to Millimeters" InputLabel="Centimeters" ResultLabel="Millimeters" Convert="DistanceService.CentimetersToMillimeters" InputValue="@centimeters" />
+        <MudGrid Spacing="4" Justify="Justify.Center">
+            <MudItem xs="12" sm="4" md="4">
+                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined">
+                    @foreach (var unit in distanceUnits)
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
 
-    <ConversionComponent Title="Centimeters to Meters" InputLabel="Centimeters" ResultLabel="Meters" Convert="DistanceService.CentimetersToMeters" InputValue="@centimeters" />
+            <MudItem xs="12" sm="4" md="4">
+                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" />
+            </MudItem>
 
-    <ConversionComponent Title="Meters to Centimeters" InputLabel="Meters" ResultLabel="Centimeters" Convert="DistanceService.MetersToCentimeters" InputValue="@meters" />
+            <MudItem xs="12" sm="4" md="4">
+                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined">
+                    @foreach (var unit in distanceUnits.Where(u => u != selectedFromUnit))
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
 
-    <ConversionComponent Title="Meters to Feet" InputLabel="Meters" ResultLabel="Feet" Convert="DistanceService.MetersToFeet" InputValue="@meters" />
+            <MudItem xs="12" Class="d-flex justify-center">
+                <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary">Convert</MudButton>
+            </MudItem>
 
-    <ConversionComponent Title="Meters to Yards" InputLabel="Meters" ResultLabel="Yards" Convert="DistanceService.MetersToYards" InputValue="@meters" />
-
-    <ConversionComponent Title="Kilometers to Meters" InputLabel="Kilometers" ResultLabel="Meters" Convert="DistanceService.KilometersToMeters" InputValue="@kilometers" />
-
-    <ConversionComponent Title="Kilometers to Miles" InputLabel="Kilometers" ResultLabel="Miles" Convert="DistanceService.KilometersToMiles" InputValue="@kilometers" />
-
-    <ConversionComponent Title="Kilometers to Feet" InputLabel="Kilometers" ResultLabel="Feet" Convert="DistanceService.KilometersToFeet" InputValue="@kilometers" />
-
-    <ConversionComponent Title="Inches to Centimeters" InputLabel="Inches" ResultLabel="Centimeters" Convert="DistanceService.InchesToCentimeters" InputValue="@inches" />
-
-    <ConversionComponent Title="Feet to Meters" InputLabel="Feet" ResultLabel="Meters" Convert="DistanceService.FeetToMeters" InputValue="@feet" />
-
-    <ConversionComponent Title="Yards to Meters" InputLabel="Yards" ResultLabel="Meters" Convert="DistanceService.YardsToMeters" InputValue="@yards" />
-
-    <ConversionComponent Title="Miles to Kilometers" InputLabel="Miles" ResultLabel="Kilometers" Convert="DistanceService.MilesToKilometers" InputValue="@miles" />
-
-    <ConversionComponent Title="Feet to Kilometers" InputLabel="Feet" ResultLabel="Kilometers" Convert="DistanceService.FeetToKilometers" InputValue="@feet" />
-
-    <ConversionComponent Title="Feet to Yards" InputLabel="Feet" ResultLabel="Yards" Convert="DistanceService.FeetToYards" InputValue="@feet" />
-
-    <ConversionComponent Title="Yards to Feet" InputLabel="Yards" ResultLabel="Feet" Convert="DistanceService.YardsToFeet" InputValue="@yards" />
-
-    <ConversionComponent Title="Inches to Feet" InputLabel="Inches" ResultLabel="Feet" Convert="DistanceService.InchesToFeet" InputValue="@inches" />
-
-    <ConversionComponent Title="Feet to Inches" InputLabel="Feet" ResultLabel="Inches" Convert="DistanceService.FeetToInches" InputValue="@feet" />
-</MudGrid>
-
-
-<MudDivider Class="mt-6 mb-4" />
-
-<MudText Typo="Typo.h5" Class="mb-2">Convert Temperatures</MudText>
+            <!-- Center the result field --> 
+            @* Maybe add some hidden helper text to show when focus *@
+            @* https://mudblazor.com/components/textfield#form-props-helper-text-on-focus *@
+            <MudItem xs="12" sm="4" md="3"  Class="d-flex justify-center">
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue" />
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
 
 @code {
-    private double millimeters;
-    private double centimeters;
-    private double meters;
-    private double kilometers;
+    private double inputValue;
+    private double resultValue;
 
-    private double inches;
-    private double feet;
-    private double yards;
-    private double miles;
+    private string selectedFromUnit = "Meters";
+    private string selectedToUnit = "Feet";
+
+    private List<string> distanceUnits = new List<string>
+    {
+        "Millimeters", "Centimeters", "Meters", "Kilometers",
+        "Inches", "Feet", "Yards", "Miles"
+    };
+
+    private void ConvertUnits()
+    {
+        // Simple example switch-case to call appropriate conversion based on selected units
+        if (selectedFromUnit == "Meters" && selectedToUnit == "Feet")
+        {
+            resultValue = DistanceService.MetersToFeet(inputValue);
+        }
+        else if (selectedFromUnit == "Feet" && selectedToUnit == "Meters")
+        {
+            resultValue = DistanceService.FeetToMeters(inputValue);
+        }
+        // Add more conditions for all possible combinations
+    }
 }

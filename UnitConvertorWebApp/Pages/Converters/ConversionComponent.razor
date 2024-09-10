@@ -1,32 +1,86 @@
-﻿@using UnitConvertorWebApp.Services
+﻿<MudCard Class="mx-4">
+    <MudCardContent>
+        <MudGrid Spacing="4" Justify="Justify.Center">
+            <!-- From Unit Dropdown -->
+            <MudItem xs="12" sm="3" md="3">
+                <MudSelect @bind-Value="selectedFromUnit" @bind-Value:event="onchange"
+                           Label="From Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
+                    @foreach (var unit in Units)
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
 
-<MudItem xs="12" sm="6" md="4">
-    <MudCard>
-        <MudCardContent>
-            <MudText Typo="Typo.h6">@Title</MudText>
-            <MudTextField @bind-Value="InputValue" Label="@InputLabel" Variant="Variant.Outlined" />
-            <MudText Typo="Typo.body1">@ResultLabel: @Convert(InputValue)</MudText>
-            @* <MudText Typo="Typo.body1">
-                @ResultLabel:
-                <MudText Color="Color.Primary" Typo="Typo.body1" Inline="true">@Convert(InputValue)</MudText>
-            </MudText> *@
-        </MudCardContent>
-    </MudCard>
-</MudItem>
+            <!-- Input Value Field -->
+            <MudItem xs="12" sm="3" md="3">
+                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary" />
+            </MudItem>
+
+            <!-- To Unit Dropdown -->
+            <MudItem xs="12" sm="3" md="3">
+                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
+                    @foreach (var unit in filteredToUnits)
+                    {
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <!-- Convert Button -->
+            <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
+                <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary">Convert</MudButton>
+            </MudItem>
+
+            <!-- Result Field -->
+            <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue" Class="mud-background" />
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
 
 @code {
-    [Parameter]
-    public string? Title { get; set; }
+    [Parameter] public List<string> Units { get; set; } = new();
+    [Parameter] public Func<double, string, string, double> Convert { get; set; } = default!;
+    [Parameter] public string DefaultFromUnit { get; set; } = string.Empty;
+    [Parameter] public string DefaultToUnit { get; set; } = string.Empty;
 
-    [Parameter]
-    public string? InputLabel { get; set; }
+    private string selectedFromUnit;
+    private string selectedToUnit;
+    private double inputValue;
+    private double resultValue;
 
-    [Parameter]
-    public Func<double, double> Convert { get; set; }
+    // Filtered list for the "To Unit" dropdown
+    private List<string> filteredToUnits = new();
 
-    [Parameter]
-    public double InputValue { get; set; }
+    protected override void OnInitialized()
+    {
+        selectedFromUnit = DefaultFromUnit;
+        selectedToUnit = DefaultToUnit;
+        UpdateFilteredToUnits();
+    }
 
-    [Parameter]
-    public string? ResultLabel { get; set; }
+    // Update the filtered "To Unit" list whenever the "From Unit" changes
+    private void OnFromUnitChanged(string newFromUnit)
+    {
+        selectedFromUnit = newFromUnit;
+        UpdateFilteredToUnits();
+    }
+
+    // Method to update the list of available units in the "To Unit" dropdown
+    private void UpdateFilteredToUnits()
+    {
+        filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
+        if (!filteredToUnits.Contains(selectedToUnit))
+        {
+            selectedToUnit = filteredToUnits.FirstOrDefault();
+        }
+        StateHasChanged();
+    }
+
+    private void ConvertUnits()
+    {
+        resultValue = Convert(inputValue, selectedFromUnit, selectedToUnit);
+    }
 }

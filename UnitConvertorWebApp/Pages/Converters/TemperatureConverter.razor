@@ -1,0 +1,36 @@
+﻿@using UnitConvertorWebApp.Services
+@inject ITemperatureConversionService TemperatureService
+
+
+<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Temperatures</MudText>
+
+<ConversionComponent Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" Convert="(value, fromUnit, toUnit) => ConvertTemperature(value, fromUnit, toUnit)" />
+
+
+@code {
+    private List<string> temperatureUnits = new List<string>
+    {
+        "Celsius (°C)", "Fahrenheit (°F)", "Kelvin (K)"
+    };
+
+    private double ConvertTemperature(double inputValue, string fromUnit, string toUnit)
+    {
+        if (fromUnit == toUnit)
+        {
+            return inputValue;
+        }
+
+        return (fromUnit, toUnit) switch
+        {
+            ("Celsius (°C)", "Fahrenheit (°F)") => TemperatureService.CelsiusToFahrenheit(inputValue),
+            ("Fahrenheit (°F)", "Celsius (°C)") => TemperatureService.FahrenheitToCelsius(inputValue),
+            ("Celsius (°C)", "Kelvin (K)") => TemperatureService.CelsiusToKelvin(inputValue),
+            ("Kelvin (K)", "Celsius (°C)") => TemperatureService.KelvinToCelsius(inputValue),
+            ("Fahrenheit (°F)", "Kelvin (K)") => TemperatureService.FahrenheitToKelvin(inputValue),
+            ("Kelvin (K)", "Fahrenheit (°F)") => TemperatureService.KelvinToFahrenheit(inputValue),
+
+            _ => 0 // Return 0 for unsupported conversions
+        };
+    }
+
+}

@@ -2,6 +2,8 @@
 {
     public interface IWeightConversionService
     {
+        //TODO: Probalby missing conversions
+
         double GramsToKilograms(double grams);
         double KilogramsToGrams(double kilograms);
 

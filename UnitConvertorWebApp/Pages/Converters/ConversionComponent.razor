@@ -1,38 +1,35 @@
-﻿<MudCard Class="mx-4">
+﻿@using UnitConvertorWebApp.Services
+@inject IWeightConversionService WeightService
+
+<MudCard Class="mx-4">
     <MudCardContent>
         <MudGrid Spacing="4" Justify="Justify.Center">
-            <!-- From Unit Dropdown -->
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect @bind-Value="selectedFromUnit" @bind-Value:event="onchange"
-                           Label="From Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
+                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
                     @foreach (var unit in Units)
                     {
-                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
 
-            <!-- Input Value Field -->
             <MudItem xs="12" sm="3" md="3">
                 <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary" />
             </MudItem>
 
-            <!-- To Unit Dropdown -->
             <MudItem xs="12" sm="3" md="3">
                 <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
-                    @foreach (var unit in filteredToUnits)
+                    @foreach (var unit in Units.Where(u => u != selectedFromUnit))
                     {
-                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
 
-            <!-- Convert Button -->
             <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
                 <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary">Convert</MudButton>
             </MudItem>
 
-            <!-- Result Field -->
             <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
                 <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue" Class="mud-background" />
             </MudItem>
@@ -51,32 +48,10 @@
     private double inputValue;
     private double resultValue;
 
-    // Filtered list for the "To Unit" dropdown
-    private List<string> filteredToUnits = new();
-
     protected override void OnInitialized()
     {
         selectedFromUnit = DefaultFromUnit;
         selectedToUnit = DefaultToUnit;
-        UpdateFilteredToUnits();
-    }
-
-    // Update the filtered "To Unit" list whenever the "From Unit" changes
-    private void OnFromUnitChanged(string newFromUnit)
-    {
-        selectedFromUnit = newFromUnit;
-        UpdateFilteredToUnits();
-    }
-
-    // Method to update the list of available units in the "To Unit" dropdown
-    private void UpdateFilteredToUnits()
-    {
-        filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
-        if (!filteredToUnits.Contains(selectedToUnit))
-        {
-            selectedToUnit = filteredToUnits.FirstOrDefault();
-        }
-        StateHasChanged();
     }
 
     private void ConvertUnits()

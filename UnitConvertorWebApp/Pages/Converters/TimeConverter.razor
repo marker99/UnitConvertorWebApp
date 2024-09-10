@@ -1,0 +1,38 @@
+﻿@using UnitConvertorWebApp.Services
+@inject ITimeConversionService TimeService
+
+<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Time</MudText>
+
+<ConversionComponent Units="timeUnits" DefaultFromUnit="@timeUnits[0]" DefaultToUnit="@timeUnits[1]"
+                     Convert="(value, fromUnit, toUnit) => ConvertTime(value, fromUnit, toUnit)" />
+
+@code {
+    private List<string> timeUnits = new List<string>
+    {
+        "Seconds (s)", "Minutes (min)", "Hours (h)", "Days (d)"
+    };
+
+    private double ConvertTime(double inputValue, string fromUnit, string toUnit)
+    {
+        if (fromUnit == toUnit)
+        {
+            return inputValue;
+        }
+
+        return (fromUnit, toUnit) switch
+        {
+            ("Seconds (s)", "Minutes (min)") => TimeService.SecondsToMinutes(inputValue),
+            ("Minutes (min)", "Seconds (s)") => TimeService.MinutesToSeconds(inputValue),
+            ("Seconds (s)", "Hours (h)") => TimeService.SecondsToHours(inputValue),
+            ("Hours (h)", "Seconds (s)") => TimeService.HoursToSeconds(inputValue),
+            ("Minutes (min)", "Hours (h)") => TimeService.MinutesToHours(inputValue),
+            ("Hours (h)", "Minutes (min)") => TimeService.HoursToMinutes(inputValue),
+            ("Days (d)", "Hours (h)") => TimeService.DaysToHours(inputValue),
+            ("Hours (h)", "Days (d)") => TimeService.HoursToDays(inputValue),
+            ("Days (d)", "Minutes (min)") => TimeService.DaysToMinutes(inputValue),
+            ("Minutes (min)", "Days (d)") => TimeService.MinutesToDays(inputValue),
+
+            _ => 0 // Return 0 for unsupported conversions
+        };
+    }
+}

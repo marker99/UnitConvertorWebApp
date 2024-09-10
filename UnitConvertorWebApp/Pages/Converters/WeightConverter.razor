@@ -3,7 +3,8 @@
 
 <MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Weights</MudText>
 
-<ConversionComponent Units="weightUnits" DefaultFromUnit="@weightUnits[0]" Convert="(value, fromUnit, toUnit) => ConvertWeight(value, fromUnit, toUnit)" />
+<ConversionComponent Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
+                     Convert="(value, fromUnit, toUnit) => ConvertWeight(value, fromUnit, toUnit)" />
 
 @code {
     private List<string> weightUnits = new List<string>
@@ -13,10 +14,11 @@
 
     private double ConvertWeight(double inputValue, string fromUnit, string toUnit)
     {
-        if(fromUnit == toUnit){
+        if (fromUnit == toUnit)
+        {
             return inputValue;
         }
-        
+
         return (fromUnit, toUnit) switch
         {
             ("Grams (g)", "Kilogram (kg)") => WeightService.GramsToKilograms(inputValue),
@@ -31,7 +33,7 @@
             ("Kilograms (kg)", "Stones (st)") => WeightService.KilogramsToStones(inputValue),
             ("Stones (st)", "Pounds (lb)") => WeightService.StonesToPounds(inputValue),
             ("Pounds (lb)", "Stones (st)") => WeightService.PoundsToStones(inputValue),
-            
+
             _ => 0 // Return 0 for unsupported conversions
         };
     }

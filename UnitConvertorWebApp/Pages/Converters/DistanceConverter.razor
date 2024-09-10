@@ -2,15 +2,15 @@
 @inject IDistanceConversionService DistanceService
 
 
-<MudText Typo="Typo.h5" Class="mb-2">Convert Distances</MudText>
+<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Distances</MudText>
 
-<MudCard>
+<MudCard Class="mx-4">
     <MudCardContent>
-        <MudText Typo="Typo.h5" Class="mb-2">Distance Converter</MudText>
+        @* <MudText Typo="Typo.h5" Class="mb-2">Distance Converter</MudText> *@
 
         <MudGrid Spacing="4" Justify="Justify.Center">
-            <MudItem xs="12" sm="4" md="4">
-                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined">
+            <MudItem xs="12" sm="3" md="3">
+                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
                     @foreach (var unit in distanceUnits)
                     {
                         <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -18,12 +18,12 @@
                 </MudSelect>
             </MudItem>
 
-            <MudItem xs="12" sm="4" md="4">
-                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" />
+            <MudItem xs="12" sm="3" md="3">
+                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary" />
             </MudItem>
 
-            <MudItem xs="12" sm="4" md="4">
-                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined">
+            <MudItem xs="12" sm="3" md="3">
+                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
                     @foreach (var unit in distanceUnits.Where(u => u != selectedFromUnit))
                     {
                         <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -31,20 +31,19 @@
                 </MudSelect>
             </MudItem>
 
-            <MudItem xs="12" Class="d-flex justify-center">
+            <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
                 <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary">Convert</MudButton>
             </MudItem>
 
-            <!-- Center the result field --> 
+            <!-- Center the result field -->
             @* Maybe add some hidden helper text to show when focus *@
             @* https://mudblazor.com/components/textfield#form-props-helper-text-on-focus *@
-            <MudItem xs="12" sm="4" md="3"  Class="d-flex justify-center">
-                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue" />
+            <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue" Class="mud-background" />
             </MudItem>
         </MudGrid>
     </MudCardContent>
 </MudCard>
-
 @code {
     private double inputValue;
     private double resultValue;

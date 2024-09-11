@@ -66,10 +66,10 @@
         public double KilometersToInches(double kilometers) => kilometers * 39_370.1;
 
 
-        public double IncesToMillimeters(double inches) => inches * 25.4;
+        public double InchesToMillimeters(double inches) => inches * 25.4;
 
 
-        public double IncesToMeters(double inches) => inches / 39.3701;
+        public double InchesToMeters(double inches) => inches / 39.3701;
 
 
         public double InchesToKilometers(double inches) => inches / 39_370.1;

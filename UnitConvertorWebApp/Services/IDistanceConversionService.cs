@@ -37,9 +37,9 @@
 
 
         // Imperial to Metric
-        double IncesToMillimeters(double inches);
+        double InchesToMillimeters(double inches);
         double InchesToCentimeters(double inches);
-        double IncesToMeters(double inches);
+        double InchesToMeters(double inches);
         double InchesToKilometers(double inches);
         double FeetToMillimeters(double feet);
         double FeetToCentimeters(double feet);

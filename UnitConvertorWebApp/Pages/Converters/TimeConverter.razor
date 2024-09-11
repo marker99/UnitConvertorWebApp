@@ -9,7 +9,8 @@
 @code {
     private List<string> timeUnits = new List<string>
     {
-        "Seconds (s)", "Minutes (min)", "Hours (h)", "Days (d)"
+        "Milliseconds (ms)", "Seconds (s)", "Minutes (min)", "Hours (h)", "Days (d)",
+        "Weeks (wk)", "Months (mo)", "Years (yr)"
     };
 
     private double ConvertTime(double inputValue, string fromUnit, string toUnit)
@@ -21,16 +22,78 @@
 
         return (fromUnit, toUnit) switch
         {
+            // Milliseconds conversions
+            ("Milliseconds (ms)", "Seconds (s)") => TimeService.MillisecondsToSeconds(inputValue),
+            ("Milliseconds (ms)", "Minutes (min)") => TimeService.MillisecondsToMinutes(inputValue),
+            ("Milliseconds (ms)", "Hours (h)") => TimeService.MillisecondsToHours(inputValue),
+            ("Milliseconds (ms)", "Days (d)") => TimeService.MillisecondsToDays(inputValue),
+            ("Milliseconds (ms)", "Weeks (wk)") => TimeService.MillisecondsToWeeks(inputValue),
+            ("Milliseconds (ms)", "Months (mo)") => TimeService.MillisecondsToMonths(inputValue),
+            ("Milliseconds (ms)", "Years (yr)") => TimeService.MillisecondsToYears(inputValue),
+
+            ("Seconds (s)", "Milliseconds (ms)") => TimeService.SecondsToMilliseconds(inputValue),
+
+            // Seconds conversions
             ("Seconds (s)", "Minutes (min)") => TimeService.SecondsToMinutes(inputValue),
-            ("Minutes (min)", "Seconds (s)") => TimeService.MinutesToSeconds(inputValue),
             ("Seconds (s)", "Hours (h)") => TimeService.SecondsToHours(inputValue),
-            ("Hours (h)", "Seconds (s)") => TimeService.HoursToSeconds(inputValue),
+            ("Seconds (s)", "Days (d)") => TimeService.SecondsToDays(inputValue),
+            ("Seconds (s)", "Weeks (wk)") => TimeService.SecondsToWeeks(inputValue),
+            ("Seconds (s)", "Months (mo)") => TimeService.SecondsToMonths(inputValue),
+            ("Seconds (s)", "Years (yr)") => TimeService.SecondsToYears(inputValue),
+
+            // Minutes conversions
+            ("Minutes (min)", "Milliseconds (ms)") => TimeService.MinutesToMilliseconds(inputValue),
+            ("Minutes (min)", "Seconds (s)") => TimeService.MinutesToSeconds(inputValue),
             ("Minutes (min)", "Hours (h)") => TimeService.MinutesToHours(inputValue),
-            ("Hours (h)", "Minutes (min)") => TimeService.HoursToMinutes(inputValue),
-            ("Days (d)", "Hours (h)") => TimeService.DaysToHours(inputValue),
-            ("Hours (h)", "Days (d)") => TimeService.HoursToDays(inputValue),
-            ("Days (d)", "Minutes (min)") => TimeService.DaysToMinutes(inputValue),
             ("Minutes (min)", "Days (d)") => TimeService.MinutesToDays(inputValue),
+            ("Minutes (min)", "Weeks (wk)") => TimeService.MinutesToWeeks(inputValue),
+            ("Minutes (min)", "Months (mo)") => TimeService.MinutesToMonths(inputValue),
+            ("Minutes (min)", "Years (yr)") => TimeService.MinutesToYears(inputValue),
+
+            // Hours conversions
+            ("Hours (h)", "Milliseconds (ms)") => TimeService.HoursToMilliseconds(inputValue),
+            ("Hours (h)", "Seconds (s)") => TimeService.HoursToSeconds(inputValue),
+            ("Hours (h)", "Minutes (min)") => TimeService.HoursToMinutes(inputValue),
+            ("Hours (h)", "Days (d)") => TimeService.HoursToDays(inputValue),
+            ("Hours (h)", "Weeks (wk)") => TimeService.HoursToWeeks(inputValue),
+            ("Hours (h)", "Months (mo)") => TimeService.HoursToMonths(inputValue),
+            ("Hours (h)", "Years (yr)") => TimeService.HoursToYears(inputValue),
+
+            // Days conversions
+            ("Days (d)", "Milliseconds (ms)") => TimeService.DaysToMilliseconds(inputValue),
+            ("Days (d)", "Seconds (s)") => TimeService.DaysToSeconds(inputValue),
+            ("Days (d)", "Minutes (min)") => TimeService.DaysToMinutes(inputValue),
+            ("Days (d)", "Hours (h)") => TimeService.DaysToHours(inputValue),
+            ("Days (d)", "Weeks (wk)") => TimeService.DaysToWeeks(inputValue),
+            ("Days (d)", "Months (mo)") => TimeService.DaysToMonths(inputValue),
+            ("Days (d)", "Years (yr)") => TimeService.DaysToYears(inputValue),
+
+            // Weeks conversions
+            ("Weeks (wk)", "Milliseconds (ms)") => TimeService.WeeksToMilliseconds(inputValue),
+            ("Weeks (wk)", "Seconds (s)") => TimeService.WeeksToSeconds(inputValue),
+            ("Weeks (wk)", "Minutes (min)") => TimeService.WeeksToMinutes(inputValue),
+            ("Weeks (wk)", "Hours (h)") => TimeService.WeeksToHours(inputValue),
+            ("Weeks (wk)", "Days (d)") => TimeService.WeeksToDays(inputValue),
+            ("Weeks (wk)", "Months (mo)") => TimeService.WeeksToMonths(inputValue),
+            ("Weeks (wk)", "Years (yr)") => TimeService.WeeksToYears(inputValue),
+
+            // Months conversions
+            ("Months (mo)", "Milliseconds (ms)") => TimeService.MonthsToMilliseconds(inputValue),
+            ("Months (mo)", "Seconds (s)") => TimeService.MonthsToSeconds(inputValue),
+            ("Months (mo)", "Minutes (min)") => TimeService.MonthsToMinutes(inputValue),
+            ("Months (mo)", "Hours (h)") => TimeService.MonthsToHours(inputValue),
+            ("Months (mo)", "Days (d)") => TimeService.MonthsToDays(inputValue),
+            ("Months (mo)", "Weeks (wk)") => TimeService.MonthsToWeeks(inputValue),
+            ("Months (mo)", "Years (yr)") => TimeService.MonthsToYears(inputValue),
+
+            // Years conversions
+            ("Years (yr)", "Milliseconds (ms)") => TimeService.YearsToMilliseconds(inputValue),
+            ("Years (yr)", "Seconds (s)") => TimeService.YearsToSeconds(inputValue),
+            ("Years (yr)", "Minutes (min)") => TimeService.YearsToMinutes(inputValue),
+            ("Years (yr)", "Hours (h)") => TimeService.YearsToHours(inputValue),
+            ("Years (yr)", "Days (d)") => TimeService.YearsToDays(inputValue),
+            ("Years (yr)", "Weeks (wk)") => TimeService.YearsToWeeks(inputValue),
+            ("Years (yr)", "Months (mo)") => TimeService.YearsToMonths(inputValue),
 
             _ => 0 // Return 0 for unsupported conversions
         };

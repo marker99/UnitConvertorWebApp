@@ -2,9 +2,7 @@
 @inject IDistanceConversionService DistanceService
 
 
-<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Distances</MudText>
-
-<ConversionComponent Units="distanceUnits" DefaultFromUnit="@distanceUnits[0]" DefaultToUnit="@distanceUnits[1]"
+<ConversionComponent TitleOfCard="Convert Distances" Units="distanceUnits" DefaultFromUnit="@distanceUnits[0]" DefaultToUnit="@distanceUnits[1]"
                      Convert="(value, fromUnit, toUnit) => ConvertDistance(value, fromUnit, toUnit)" />
 
 

@@ -1,11 +1,8 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject ITemperatureConversionService TemperatureService
 
-
-<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Temperatures</MudText>
-
-<ConversionComponent Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" DefaultToUnit="@temperatureUnits[1]"
-Convert="(value, fromUnit, toUnit) => ConvertTemperature(value, fromUnit, toUnit)" />
+<ConversionComponent TitleOfCard="Convert Temperatures" Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" DefaultToUnit="@temperatureUnits[1]"
+                     Convert="(value, fromUnit, toUnit) => ConvertTemperature(value, fromUnit, toUnit)" />
 
 
 @code {

@@ -1,11 +1,13 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject IWeightConversionService WeightService
 
-<MudCard Class="mx-4">
+<MudCard Class="mx-4" Elevation="0" Style="border-radius: 24px">
     <MudCardContent>
+        <MudText Typo="Typo.h5"  Class="mb-4">@TitleOfCard</MudText>
+
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
+                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined"  AdornmentColor="Color.Primary">
                     @foreach (var unit in Units)
                     {
                             <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -14,11 +16,11 @@
             </MudItem>
 
             <MudItem xs="12" sm="3" md="3">
-                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary" />
+                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined"  AdornmentColor="Color.Primary" />
             </MudItem>
 
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" Class="mud-background" AdornmentColor="Color.Primary">
+                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
                     @foreach (var unit in Units.Where(u => u != selectedFromUnit))
                     {
                             <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -27,21 +29,25 @@
             </MudItem>
 
             <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
-                <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary">Convert</MudButton>
+                <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Calculate">Convert</MudButton>
             </MudItem>
 
             <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
-                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue" Class="mud-background" />
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue"  />
             </MudItem>
         </MudGrid>
     </MudCardContent>
 </MudCard>
+
+<MudDivider Class="my-6" Style="height: 4px; background-color: #004e4a; border-radius:8px" />
+
 
 @code {
     [Parameter] public List<string> Units { get; set; } = new();
     [Parameter] public Func<double, string, string, double> Convert { get; set; } = default!;
     [Parameter] public string DefaultFromUnit { get; set; } = string.Empty;
     [Parameter] public string DefaultToUnit { get; set; } = string.Empty;
+    [Parameter] public string TitleOfCard { get; set; } = string.Empty;
 
     private string selectedFromUnit;
     private string selectedToUnit;

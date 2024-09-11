@@ -1,9 +1,7 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject IWeightConversionService WeightService
 
-<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Weights</MudText>
-
-<ConversionComponent Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
+<ConversionComponent TitleOfCard="Convert Weights" Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
                      Convert="(value, fromUnit, toUnit) => ConvertWeight(value, fromUnit, toUnit)" />
 
 @code {

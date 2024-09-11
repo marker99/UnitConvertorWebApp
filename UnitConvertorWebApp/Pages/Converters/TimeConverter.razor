@@ -1,9 +1,8 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject ITimeConversionService TimeService
 
-<MudText Typo="Typo.h5" Class="mb-2 mx-4">Convert Time</MudText>
 
-<ConversionComponent Units="timeUnits" DefaultFromUnit="@timeUnits[0]" DefaultToUnit="@timeUnits[1]"
+<ConversionComponent TitleOfCard="Convert Time" Units="timeUnits" DefaultFromUnit="@timeUnits[0]" DefaultToUnit="@timeUnits[1]"
                      Convert="(value, fromUnit, toUnit) => ConvertTime(value, fromUnit, toUnit)" />
 
 @code {

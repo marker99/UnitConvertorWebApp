@@ -1,7 +1,7 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject ITemperatureConversionService TemperatureService
 
-<ConversionComponent TitleOfCard="Convert Temperatures" Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" DefaultToUnit="@temperatureUnits[1]"
+<ConversionComponent TitleOfCard="Temperatures" Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" DefaultToUnit="@temperatureUnits[1]"
                      Convert="(value, fromUnit, toUnit) => ConvertTemperature(value, fromUnit, toUnit)" />
 
 

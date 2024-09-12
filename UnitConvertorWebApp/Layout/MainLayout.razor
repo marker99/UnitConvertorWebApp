@@ -8,7 +8,7 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0">
+    <MudAppBar Elevation="1">
         <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
         <MudSpacer />
         <MudToggleIconButton @bind-Toggled="_isDarkMode" Color="Color.Inherit" Icon="@Icons.Material.Filled.DarkMode"
@@ -31,24 +31,24 @@
         {
             PaletteLight = new PaletteLight()
             {
-                AppbarBackground = "#006661",
-                Background = "#ffffff",
-                // AppbarText = "#333333",
-                Surface = "#f8f6f6",
-                Divider = "#004e4a",
+                AppbarBackground = "#f0eee5",
+                Background = "#f4f2ed",
+                AppbarText = Colors.Gray.Darken4,
+                Surface = "#f8f8f7",
+                Divider = "#ab542e",
                 TextPrimary = Colors.Gray.Darken4,
-                Primary = "#006661",
+                Primary = "#ab542e",
                 
             },
 
             PaletteDark = new PaletteDark()
             {
-                AppbarBackground = "#006661",
-                Background = "#212121",
-                Surface = "#2f2f2f",
-                Divider = "#006661",
+                AppbarBackground = "#2b2a27",
+                Background = "#2f2f2c",
+                Surface = "#393937",
+                Divider = "#ab542e",
                 
-                Primary = "#006661",
+                Primary = "#ab542e",
             }
         };
 

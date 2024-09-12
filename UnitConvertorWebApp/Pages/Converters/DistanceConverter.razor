@@ -1,92 +1,21 @@
-﻿@using UnitConvertorWebApp.Services
+﻿@using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Services
 @inject IDistanceConversionService DistanceService
 
 
 <ConversionComponent TitleOfCard="Distances" Units="distanceUnits" DefaultFromUnit="@distanceUnits[0]" DefaultToUnit="@distanceUnits[1]"
-                     Convert="(value, fromUnit, toUnit) => ConvertDistance(value, fromUnit, toUnit)" />
+                     Convert="ConvertDistance" />
 
 
 @code {
     private List<string> distanceUnits = new List<string>
     {
-        "Millimeters (mm)", "Centimeters (cm)", "Meters (m)", "Kilometers (km)",
-        "Inches (in)", "Feet (ft)", "Yards (yd)", "Miles (mi)"
+        "Millimeter", "Centimeter", "Meter", "Kilometer",
+        "Inch", "Feet", "Yard", "Mile"
     };
 
-    private double ConvertDistance(double inputValue, string fromUnit, string toUnit)
+    private ConversionResult ConvertDistance(double inputValue, string fromUnit, string toUnit)
     {
-        if (fromUnit == toUnit)
-        {
-            return inputValue;
-        }
-
-        return (fromUnit, toUnit) switch
-        {
-            // Metric to Metric
-            ("Millimeters (mm)", "Centimeters (cm)") => DistanceService.MillimetersToCentimeters(inputValue),
-            ("Centimeters (cm)", "Millimeters (mm)") => DistanceService.CentimetersToMillimeters(inputValue),
-            ("Centimeters (cm)", "Meters (m)") => DistanceService.CentimetersToMeters(inputValue),
-            ("Meters (m)", "Centimeters (cm)") => DistanceService.MetersToCentimeters(inputValue),
-            ("Meters (m)", "Kilometers (km)") => DistanceService.MetersToKilometers(inputValue),
-            ("Kilometers (km)", "Meters (m)") => DistanceService.KilometersToMeters(inputValue),
-            ("Centimeters (cm)", "Kilometers (km)") => DistanceService.CentimetersToKilometers(inputValue),
-            ("Kilometers (km)", "Centimeters (cm)") => DistanceService.KilometersToCentimeters(inputValue),
-            ("Millimeters (mm)", "Kilometers (km)") => DistanceService.MillimetersToKilometers(inputValue),
-            ("Kilometers (km)", "Millimeters (mm)") => DistanceService.KilometersToMillimeters(inputValue),
-            ("Millimeters (mm)", "Meters (m)") => DistanceService.MillimetersToMeters(inputValue),
-            ("Meters (m)", "Millimeters (mm)") => DistanceService.MetersToMillimeters(inputValue),
-
-            // Metric to Imperial
-            ("Millimeters (mm)", "Inches (in)") => DistanceService.MillimetersToInches(inputValue),
-            ("Millimeters (mm)", "Feet (ft)") => DistanceService.MillimetersToFeet(inputValue),
-            ("Millimeters (mm)", "Yards (yd)") => DistanceService.MillimetersToYards(inputValue),
-            ("Millimeters (mm)", "Miles (mi)") => DistanceService.MillimetersToMiles(inputValue),
-            ("Centimeters (cm)", "Inches (in)") => DistanceService.CentimetersToInches(inputValue),
-            ("Centimeters (cm)", "Feet (ft)") => DistanceService.CentimetersToFeet(inputValue),
-            ("Centimeters (cm)", "Yards (yd)") => DistanceService.CentimetersToYards(inputValue),
-            ("Centimeters (cm)", "Miles (mi)") => DistanceService.CentimetersToMiles(inputValue),
-            ("Meters (m)", "Inches (in)") => DistanceService.MetersToInches(inputValue),
-            ("Meters (m)", "Feet (ft)") => DistanceService.MetersToFeet(inputValue),
-            ("Meters (m)", "Yards (yd)") => DistanceService.MetersToYards(inputValue),
-            ("Meters (m)", "Miles (mi)") => DistanceService.MetersToMiles(inputValue),
-            ("Kilometers (km)", "Miles (mi)") => DistanceService.KilometersToMiles(inputValue),
-            ("Kilometers (km)", "Feet (ft)") => DistanceService.KilometersToFeet(inputValue),
-            ("Kilometers (km)", "Yards (yd)") => DistanceService.KilometersToYards(inputValue),
-            ("Kilometers (km)", "Inches (in)") => DistanceService.KilometersToInches(inputValue),
-
-            // Imperial to Metric
-            ("Inches (in)", "Millimeters (mm)") => DistanceService.InchesToMillimeters(inputValue),
-            ("Inches (in)", "Centimeters (cm)") => DistanceService.InchesToCentimeters(inputValue),
-            ("Inches (in)", "Meters (m)") => DistanceService.InchesToMeters(inputValue),
-            ("Inches (in)", "Kilometers (km)") => DistanceService.InchesToKilometers(inputValue),
-            ("Feet (ft)", "Millimeters (mm)") => DistanceService.FeetToMillimeters(inputValue),
-            ("Feet (ft)", "Centimeters (cm)") => DistanceService.FeetToCentimeters(inputValue),
-            ("Feet (ft)", "Meters (m)") => DistanceService.FeetToMeters(inputValue),
-            ("Feet (ft)", "Kilometers (km)") => DistanceService.FeetToKilometers(inputValue),
-            ("Yards (yd)", "Millimeters (mm)") => DistanceService.YardsToMillimeters(inputValue),
-            ("Yards (yd)", "Centimeters (cm)") => DistanceService.YardsToCentimeters(inputValue),
-            ("Yards (yd)", "Meters (m)") => DistanceService.YardsToMeters(inputValue),
-            ("Yards (yd)", "Kilometers (km)") => DistanceService.YardsToKilometers(inputValue),
-            ("Miles (mi)", "Millimeters (mm)") => DistanceService.MilesToMillimeters(inputValue),
-            ("Miles (mi)", "Centimeters (cm)") => DistanceService.MilesToCentimeters(inputValue),
-            ("Miles (mi)", "Meters (m)") => DistanceService.MilesToMeters(inputValue),
-            ("Miles (mi)", "Kilometers (km)") => DistanceService.MilesToKilometers(inputValue),
-
-            // Imperial to Imperial
-            ("Inches (in)", "Feet (ft)") => DistanceService.InchesToFeet(inputValue),
-            ("Feet (ft)", "Inches (in)") => DistanceService.FeetToInches(inputValue),
-            ("Feet (ft)", "Yards (yd)") => DistanceService.FeetToYards(inputValue),
-            ("Yards (yd)", "Feet (ft)") => DistanceService.YardsToFeet(inputValue),
-            ("Inches (in)", "Yards (yd)") => DistanceService.InchesToYards(inputValue),
-            ("Yards (yd)", "Inches (in)") => DistanceService.YardsToInches(inputValue),
-            ("Yards (yd)", "Miles (mi)") => DistanceService.YardsToMiles(inputValue),
-            ("Miles (mi)", "Yards (yd)") => DistanceService.MilesToYards(inputValue),
-            ("Feet (ft)", "Miles (mi)") => DistanceService.FeetToMiles(inputValue),
-            ("Miles (mi)", "Feet (ft)") => DistanceService.MilesToFeet(inputValue),
-            ("Inches (in)", "Miles (mi)") => DistanceService.InchesToMiles(inputValue),
-            ("Miles (mi)", "Inches (in)") => DistanceService.MilesToInches(inputValue),
-
-            _ => 0 // Return 0 for unsupported conversions
-        };
+        return DistanceService.Convert(inputValue, fromUnit, toUnit);
     }
 }

@@ -1,4 +1,5 @@
-﻿@using UnitConvertorWebApp.Services
+﻿@using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Services
 @inject IWeightConversionService WeightService
 
 <MudCard Class="mx-4" Elevation="1" Style="border-radius: 24px">
@@ -33,7 +34,7 @@
             </MudItem>
 
             <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
-                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultValue"  />
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultText"  />
             </MudItem>
         </MudGrid>
     </MudCardContent>
@@ -44,7 +45,7 @@
 
 @code {
     [Parameter] public List<string> Units { get; set; } = new();
-    [Parameter] public Func<double, string, string, double> Convert { get; set; } = default!;
+    [Parameter] public Func<double, string, string, ConversionResult> Convert { get; set; } = default!;
     [Parameter] public string DefaultFromUnit { get; set; } = string.Empty;
     [Parameter] public string DefaultToUnit { get; set; } = string.Empty;
     [Parameter] public string TitleOfCard { get; set; } = string.Empty;
@@ -52,7 +53,7 @@
     private string selectedFromUnit;
     private string selectedToUnit;
     private double inputValue;
-    private double resultValue;
+    private string resultText = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -62,6 +63,7 @@
 
     private void ConvertUnits()
     {
-        resultValue = Convert(inputValue, selectedFromUnit, selectedToUnit);
+        var result = Convert(inputValue, selectedFromUnit, selectedToUnit);
+        resultText = $"{result.NumericValue} {result.Abbreviation}";
     }
 }

@@ -2,8 +2,8 @@
 @inject ITimeConversionService TimeService
 
 
-<ConversionComponent TitleOfCard="Time" Units="timeUnits" DefaultFromUnit="@timeUnits[0]" DefaultToUnit="@timeUnits[1]"
-                     Convert="(value, fromUnit, toUnit) => ConvertTime(value, fromUnit, toUnit)" />
+@* <ConversionComponent TitleOfCard="Time" Units="timeUnits" DefaultFromUnit="@timeUnits[0]" DefaultToUnit="@timeUnits[1]"
+                     Convert="(value, fromUnit, toUnit) => ConvertTime(value, fromUnit, toUnit)" /> *@
 
 @code {
     private List<string> timeUnits = new List<string>

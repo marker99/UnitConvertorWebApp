@@ -1,8 +1,8 @@
 ﻿@using UnitConvertorWebApp.Services
 @inject IWeightConversionService WeightService
 
-<ConversionComponent TitleOfCard="Weights" Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
-                     Convert="(value, fromUnit, toUnit) => ConvertWeight(value, fromUnit, toUnit)" />
+@* <ConversionComponent TitleOfCard="Weights" Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
+                     Convert="(value, fromUnit, toUnit) => ConvertWeight(value, fromUnit, toUnit)" /> *@
 
 @code {
     private List<string> weightUnits = new List<string>

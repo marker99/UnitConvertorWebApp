@@ -1,38 +1,18 @@
-﻿@using UnitConvertorWebApp.Services
-@inject IWeightConversionService WeightService
+﻿@using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Services
+@inject IConversionService WeightService
 
-@* <ConversionComponent TitleOfCard="Weights" Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
-                     Convert="(value, fromUnit, toUnit) => ConvertWeight(value, fromUnit, toUnit)" /> *@
+<ConversionComponent TitleOfCard="Mass" Units="weightUnits" DefaultFromUnit="@weightUnits[0]" DefaultToUnit="@weightUnits[1]"
+                     Convert="ConvertWeight" />
 
 @code {
     private List<string> weightUnits = new List<string>
     {
-        "Grams (g)", "Kilograms (kg)", "Tons (t)", "Pounds (lb)", "Ounces (oz)", "Stones (st)"
+        "Gram", "Kilogram", "Tonne", "Pound", "Ounce", "Stone"
     };
 
-    private double ConvertWeight(double inputValue, string fromUnit, string toUnit)
+    private ConversionResult ConvertWeight(double inputValue, string fromUnit, string toUnit)
     {
-        if (fromUnit == toUnit)
-        {
-            return inputValue;
-        }
-
-        return (fromUnit, toUnit) switch
-        {
-            ("Grams (g)", "Kilogram (kg)") => WeightService.GramsToKilograms(inputValue),
-            ("Kilogram (kg)", "Grams (g)") => WeightService.KilogramsToGrams(inputValue),
-            ("Kilogram (kg)", "Tons (t)") => WeightService.KilogramsToTons(inputValue),
-            ("Tons (t)", "Kilogram (kg)") => WeightService.TonsToKilograms(inputValue),
-            ("Kilogram (kg)", "Pound (lb)") => WeightService.KilogramsToPounds(inputValue),
-            ("Pound (lb)", "Kilogram (kg)") => WeightService.PoundsToKilograms(inputValue),
-            ("Pound (lb)", "Ounce (oz)") => WeightService.PoundsToOunces(inputValue),
-            ("Ounce (oz)", "Pound (lb)") => WeightService.OuncesToPounds(inputValue),
-            ("Stones (st)", "Kilograms (kg)") => WeightService.StonesToKilograms(inputValue),
-            ("Kilograms (kg)", "Stones (st)") => WeightService.KilogramsToStones(inputValue),
-            ("Stones (st)", "Pounds (lb)") => WeightService.StonesToPounds(inputValue),
-            ("Pounds (lb)", "Stones (st)") => WeightService.PoundsToStones(inputValue),
-
-            _ => 0 // Return 0 for unsupported conversions
-        };
+        return WeightService.ConvertWeight(inputValue, fromUnit, toUnit);
     }
 }

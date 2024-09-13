@@ -1,0 +1,66 @@
+﻿@page "/dynamic-converter"
+@using UnitsNet
+@inject NavigationManager Navigation
+
+<MudSelect @bind-Value="selectedQuantity" Label="Select Quantity" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+    @foreach (var quantity in Quantities)
+    {
+        <MudSelectItem Value="@quantity">@quantity</MudSelectItem>
+    }
+</MudSelect>
+
+<MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+    @foreach (var unit in Units)
+    {
+        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+    }
+</MudSelect>
+
+<MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+    @foreach (var unit in Units)
+    {
+        <MudSelectItem Value="@unit">@unit</MudSelectItem>
+    }
+</MudSelect>
+
+<MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" />
+
+<MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary">Convert</MudButton>
+
+@if (conversionResult != null)
+{
+    <p>Result: @conversionResult</p>
+}
+
+@code {
+    private string selectedQuantity;
+    private string selectedFromUnit;
+    private string selectedToUnit;
+    private double inputValue;
+    private string conversionResult;
+    private List<string> Quantities { get; set; }
+    private List<string> Units { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Populate quantities
+        Quantities = Quantity.Infos.Select(q => q.Name).ToList();
+    }
+
+    private void OnQuantitySelected(string quantityName)
+    {
+        // Get unit options when a quantity is selected
+        var quantityInfo = Quantity.ByName[quantityName];
+        Units = quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
+    }
+
+    private void ConvertUnits()
+    {
+        var quantityInfo = Quantity.ByName[selectedQuantity];
+        var fromUnitEnum = (Enum) Enum.Parse(quantityInfo.UnitType, selectedFromUnit, true);
+        var toUnitEnum = (Enum) Enum.Parse(quantityInfo.UnitType, selectedToUnit, true);
+
+        double result = UnitConverter.Convert(inputValue, fromUnitEnum, toUnitEnum);
+        conversionResult = $"{inputValue} {selectedFromUnit} = {result} {selectedToUnit}";
+    }
+}

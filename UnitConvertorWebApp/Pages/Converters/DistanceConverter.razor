@@ -1,9 +1,9 @@
 ﻿@using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Services
-@inject IDistanceConversionService DistanceService
+@inject IConversionService DistanceService
 
 
-<ConversionComponent TitleOfCard="Distances" Units="distanceUnits" DefaultFromUnit="@distanceUnits[0]" DefaultToUnit="@distanceUnits[1]"
+<ConversionComponent TitleOfCard="Distance" Units="distanceUnits" DefaultFromUnit="@distanceUnits[0]" DefaultToUnit="@distanceUnits[1]"
                      Convert="ConvertDistance" />
 
 
@@ -16,6 +16,6 @@
 
     private ConversionResult ConvertDistance(double inputValue, string fromUnit, string toUnit)
     {
-        return DistanceService.Convert(inputValue, fromUnit, toUnit);
+        return DistanceService.ConvertDistance(inputValue, fromUnit, toUnit);
     }
 }

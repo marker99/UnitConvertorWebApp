@@ -1,34 +1,20 @@
-﻿@using UnitConvertorWebApp.Services
-@inject ITemperatureConversionService TemperatureService
+﻿@using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Services
+@inject IConversionService TemperatureService
 
-@* <ConversionComponent TitleOfCard="Temperatures" Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" DefaultToUnit="@temperatureUnits[1]"
-                     Convert="(value, fromUnit, toUnit) => ConvertTemperature(value, fromUnit, toUnit)" /> *@
+<ConversionComponent TitleOfCard="Temperature" Units="temperatureUnits" DefaultFromUnit="@temperatureUnits[0]" DefaultToUnit="@temperatureUnits[1]"
+                     Convert="ConvertTemperature" />
 
 
 @code {
     private List<string> temperatureUnits = new List<string>
     {
-        "Celsius (°C)", "Fahrenheit (°F)", "Kelvin (K)"
+        "DegreeCelsius", "DegreeFahrenheit", "Kelvin"
     };
 
-    private double ConvertTemperature(double inputValue, string fromUnit, string toUnit)
+    private ConversionResult ConvertTemperature(double inputValue, string fromUnit, string toUnit)
     {
-        if (fromUnit == toUnit)
-        {
-            return inputValue;
-        }
-
-        return (fromUnit, toUnit) switch
-        {
-            ("Celsius (°C)", "Fahrenheit (°F)") => TemperatureService.CelsiusToFahrenheit(inputValue),
-            ("Fahrenheit (°F)", "Celsius (°C)") => TemperatureService.FahrenheitToCelsius(inputValue),
-            ("Celsius (°C)", "Kelvin (K)") => TemperatureService.CelsiusToKelvin(inputValue),
-            ("Kelvin (K)", "Celsius (°C)") => TemperatureService.KelvinToCelsius(inputValue),
-            ("Fahrenheit (°F)", "Kelvin (K)") => TemperatureService.FahrenheitToKelvin(inputValue),
-            ("Kelvin (K)", "Fahrenheit (°F)") => TemperatureService.KelvinToFahrenheit(inputValue),
-
-            _ => 0 // Return 0 for unsupported conversions
-        };
+        return TemperatureService.ConvertTemperature(inputValue, fromUnit, toUnit);
     }
 
 }

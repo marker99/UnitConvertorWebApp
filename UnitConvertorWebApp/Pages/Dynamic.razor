@@ -1,0 +1,50 @@
+﻿@using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Pages.Converters
+@using UnitConvertorWebApp.Services
+@using UnitsNet
+@inject IConversionService DynamicConversionService
+
+@page "/dynamic"
+
+@foreach (var quantity in quantities)
+{
+    <ConversionComponent TitleOfCard="@quantity" 
+                         Units="@GetUnitsForQuantity(quantity)" 
+                         DefaultFromUnit="@GetDefaultFromUnit(quantity)" 
+                         DefaultToUnit="@GetDefaultToUnit(quantity)" 
+                         Convert="(value, fromUnit, toUnit) => ConvertValue(quantity, value, fromUnit, toUnit)" />
+}
+
+@code {
+    private List<string> quantities;
+
+    protected override void OnInitialized()
+    {
+        // Get all available quantities from UnitsNet
+        quantities = Quantity.Names.ToList();
+    }
+
+    private List<string> GetUnitsForQuantity(string quantity)
+    {
+        var quantityInfo = Quantity.ByName[quantity];
+        return quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
+    }
+
+    private string GetDefaultFromUnit(string quantity)
+    {
+        var units = GetUnitsForQuantity(quantity);
+        return units.FirstOrDefault() ?? string.Empty;
+    }
+
+    private string GetDefaultToUnit(string quantity)
+    {
+        var units = GetUnitsForQuantity(quantity);
+        return units.Skip(1).FirstOrDefault() ?? string.Empty;
+    }
+
+    private ConversionResult ConvertValue(string quantity, double value, string fromUnit, string toUnit)
+    {
+        // Use the dynamic conversion service to convert the value
+        return DynamicConversionService.Convert(quantity, value, fromUnit, toUnit);
+    }
+}

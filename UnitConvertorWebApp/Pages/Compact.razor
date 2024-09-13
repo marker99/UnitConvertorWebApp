@@ -1,0 +1,107 @@
+﻿@using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Pages.Converters
+@using UnitConvertorWebApp.Services
+@using UnitsNet
+@inject IConversionService DynamicConversionService
+
+@page "/compact"
+
+<MudGrid>
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="p-3">
+            <MudList T="string">
+                <MudListSubheader>Quantity</MudListSubheader>
+                @foreach (var quantity in quantities)
+                {
+                <MudListItem @onclick="(() => SelectQuantity(quantity))" Selected="@isSelected(quantity)">
+                    @quantity
+                </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="8">
+        <MudPaper Class="p-3">
+            @if (selectedQuantity != null)
+            {
+                <MudGrid Spacing="2">
+                    <MudItem xs="6">
+                        <MudSelect @bind-Value="selectedFromUnit" Label="From" Variant="Variant.Filled">
+                            @foreach (var unit in fromUnits)
+                            {
+                                <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudSelect @bind-Value="selectedToUnit" Label="To" Variant="Variant.Filled">
+                            @foreach (var unit in toUnits)
+                            {
+                                <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudTextField @bind-Value="inputValue" Label="Value" Variant="Variant.Filled" />
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="d-flex justify-center">
+                        <MudButton OnClick="ConvertUnits" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
+                    </MudItem>
+                </MudGrid>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<string> quantities;
+    private List<string> fromUnits = new();
+    private List<string> toUnits = new();
+    private string selectedQuantity;
+    private string selectedFromUnit;
+    private string selectedToUnit;
+    private double inputValue;
+    private string resultText = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        // Initialize all quantities
+        quantities = Quantity.Names.ToList();
+    }
+
+    private void SelectQuantity(string quantity)
+    {
+        selectedQuantity = quantity;
+        var quantityInfo = Quantity.ByName[quantity];
+
+        // Populate unit lists based on selected quantity
+        fromUnits = quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
+        toUnits = new List<string>(fromUnits);
+
+        // Set default selections
+        selectedFromUnit = fromUnits.FirstOrDefault();
+        selectedToUnit = toUnits.Skip(1).FirstOrDefault();
+    }
+
+    private bool isSelected(string quantity)
+    {
+        return selectedQuantity == quantity;
+    }
+
+    private void ConvertUnits()
+    {
+        if (!string.IsNullOrEmpty(selectedQuantity) && !string.IsNullOrEmpty(selectedFromUnit) && !string.IsNullOrEmpty(selectedToUnit))
+        {
+            var result = DynamicConversionService.Convert(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
+            resultText = $"{result.NumericValue} {result.Abbreviation}";
+        }
+    }
+}

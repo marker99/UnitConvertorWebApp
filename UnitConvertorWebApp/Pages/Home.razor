@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using UnitConvertorWebApp.Pages
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Home</PageTitle>
 
@@ -14,35 +15,61 @@
 
             <!-- Button on the far right side -->
             <MudItem xs="12" sm="3" Class="d-flex justify-end">
-                <MudButton OnClick="ToggleView" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
+                @* <MudButton OnClick="ToggleView" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
                     @currentViewButtonText
-                </MudButton>
+                </MudButton> *@
+                <MudToggleIconButton ToggledChanged="ToggleView" Color="Color.Primary" Icon="@Icons.Material.Filled.ViewAgenda"
+                                     ToggledIcon="@Icons.Material.Filled.ViewCompact" title="@(isCompactView ? "Switch to List View" : "Switch to Compact View")" />
             </MudItem>
         </MudGrid>
     </MudItem>
 </MudGrid>
 
 <!-- Divider -->
-<MudDivider Class="mt-3 mb-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" /> 
+<MudDivider Class="mt-2 mb-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" /> 
 
-<!-- Switchable view components -->
-@if (isCompactView)
+<!-- Loading spinner or views -->
+@if (isLoading)
 {
-    <CompactView />
+    <!-- Display a loading animation when switching views -->
+    <MudGrid>
+        <MudItem xs="12" class="d-flex justify-center">
+            <MudProgressCircular Size="Size.Large" Color="Color.Primary" Indeterminate="true" />
+        </MudItem>
+    </MudGrid>
 }
 else
 {
-    <ListView />
+    <!-- Switchable view components -->
+    @if (isCompactView)
+    {
+        <CompactView />
+    }
+    else
+    {
+        <ListView />
+    }
 }
 
 
 @code {
     private bool isCompactView = true;
     private string currentViewButtonText => isCompactView ? "Switch to List View" : "Switch to Compact View";
+    private bool isLoading = false;
 
-    private void ToggleView()
+    private async Task ToggleView()
     {
+        // Trigger loading state
+        isLoading = true;
+
+        // Simulate loading delay
+        await Task.Delay(600);
+
+        // Switch the view after the delay
         isCompactView = !isCompactView;
+
+        // Hide the loading animation
+        isLoading = false;
     }
 }
 

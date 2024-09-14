@@ -17,7 +17,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -104,13 +104,8 @@ code {
 
 
 
-/* Ensure the container takes up the entire viewport height */
-/*.conversion-page {
-    height: 100vh;*/ /* Viewport height */
-    /*display: flex;
-    flex-direction: column;
-}*/
 
+/* --------------- Compact view page --------------- */
 .full-height {
     /*max-height: 600px;*/ /* Adjust based on preference */
     max-height: 75vh;
@@ -133,3 +128,26 @@ MudCard.full-height .mud-list {
     color: var(--mud-palette-primary-text) !important; /* Ensure text contrast */
 }
 
+
+/* --------------- Loading and fading the pages in --------------- */
+/*.fade-enter {
+    opacity: 0;
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.fade-exit {
+    opacity: 1;
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.view {
+    transition: opacity 0.5s ease-in-out;
+}*/

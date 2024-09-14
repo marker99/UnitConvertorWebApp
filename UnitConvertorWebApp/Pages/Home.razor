@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using UnitConvertorWebApp.Pages
+@using MudBlazor.Extensions
 @inject IJSRuntime JSRuntime
 
 <PageTitle>Home</PageTitle>
@@ -15,9 +16,6 @@
 
             <!-- Button on the far right side -->
             <MudItem xs="12" sm="3" Class="d-flex justify-end">
-                @* <MudButton OnClick="ToggleView" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
-                    @currentViewButtonText
-                </MudButton> *@
                 <MudToggleIconButton ToggledChanged="ToggleView" Color="Color.Primary" Icon="@Icons.Material.Filled.ViewAgenda"
                                      ToggledIcon="@Icons.Material.Filled.ViewCompact" title="@(isCompactView ? "Switch to List View" : "Switch to Compact View")" />
             </MudItem>
@@ -26,50 +24,60 @@
 </MudGrid>
 
 <!-- Divider -->
-<MudDivider Class="mt-2 mb-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" /> 
+<MudDivider Class="mt-2 mb-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" />
+
 
 <!-- Loading spinner or views -->
 @if (isLoading)
 {
     <!-- Display a loading animation when switching views -->
     <MudGrid>
-        <MudItem xs="12" class="d-flex justify-center">
+        <MudItem xs="12" Class="d-flex justify-center">
             <MudProgressCircular Size="Size.Large" Color="Color.Primary" Indeterminate="true" />
         </MudItem>
     </MudGrid>
 }
 else
 {
-    <!-- Switchable view components -->
-    @if (isCompactView)
-    {
-        <CompactView />
-    }
-    else
-    {
-        <ListView />
-    }
+    <MudAnimate @ref="_animate" Selector=".view" Duration="0.5" AnimationTiming="AnimationTiming.EaseInOut"
+                AnimationType="AnimationType.Fade" Value="1" />
+    <!-- Apply CSS classes for transition -->
+    <div class="view">
+        @if (isCompactView)
+        {
+            <CompactView />
+        }
+        else
+        {
+            <ListView />
+        }
+    </div>
 }
 
-
 @code {
+    MudAnimate? _animate = new();
     private bool isCompactView = true;
-    private string currentViewButtonText => isCompactView ? "Switch to List View" : "Switch to Compact View";
     private bool isLoading = false;
 
     private async Task ToggleView()
     {
-        // Trigger loading state
+        // Start loading state
         isLoading = true;
 
-        // Simulate loading delay
-        await Task.Delay(600);
+        // Wait for the spinner to be fully visible
+        await Task.Delay(100);
 
-        // Switch the view after the delay
+        // Toggle the view after a brief delay
         isCompactView = !isCompactView;
 
-        // Hide the loading animation
+        // // Wait for the spinner to be hidden
+        await Task.Delay(500);
+
+        // End loading state
         isLoading = false;
+
+        // Refresh the animation after the view switch
+        await _animate?.Refresh();
     }
 }
 

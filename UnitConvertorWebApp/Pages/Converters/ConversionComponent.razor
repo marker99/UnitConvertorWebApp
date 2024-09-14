@@ -1,47 +1,39 @@
 ﻿@using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Services
-@inject IWeightConversionService WeightService
 
 <MudCard Class="mx-4" Elevation="1" Style="border-radius: 24px">
     <MudCardContent>
-        <MudText Typo="Typo.h5"  Class="mb-4">@TitleOfCard</MudText>
-
+        <MudText Typo="Typo.h5" Class="mb-4">@TitleOfCard</MudText>
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined"  AdornmentColor="Color.Primary">
+                <MudSelect T="string" Value="selectedFromUnit" ValueChanged="OnFromUnitChanged" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
                     @foreach (var unit in Units)
                     {
-                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
-
             <MudItem xs="12" sm="3" md="3">
-                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined"  AdornmentColor="Color.Primary" />
+                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" AdornmentColor="Color.Primary" />
             </MudItem>
-
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
-                    @foreach (var unit in Units.Where(u => u != selectedFromUnit))
+                <MudSelect T="string" Value="selectedToUnit" ValueChanged="OnToUnitChanged" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+                    @foreach (var unit in filteredToUnits)
                     {
-                            <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                        <MudSelectItem Value="@unit">@unit</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
-
             <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
                 <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Calculate">Convert</MudButton>
             </MudItem>
-
             <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
-                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultText"  />
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultText" />
             </MudItem>
         </MudGrid>
     </MudCardContent>
 </MudCard>
-
 <MudDivider Class="my-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" />
-
 
 @code {
     [Parameter] public List<string> Units { get; set; } = new();
@@ -54,15 +46,38 @@
     private string selectedToUnit;
     private double inputValue;
     private string resultText = string.Empty;
+    private List<string> filteredToUnits = new();
 
     protected override void OnInitialized()
     {
         selectedFromUnit = DefaultFromUnit;
         selectedToUnit = DefaultToUnit;
+        FilterToUnits();
+    }
+
+    private void OnFromUnitChanged(string newUnit)
+    {
+        selectedFromUnit = newUnit;
+        FilterToUnits();
+        StateHasChanged();
+    }
+
+    private void OnToUnitChanged(string newUnit)
+    {
+        selectedToUnit = newUnit;
+        StateHasChanged();
+    }
+
+    private void FilterToUnits()
+    {
+        filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
     }
 
     private void ConvertUnits()
     {
+        if (string.IsNullOrEmpty(selectedFromUnit) || string.IsNullOrEmpty(selectedToUnit))
+            return;
+
         var result = Convert(inputValue, selectedFromUnit, selectedToUnit);
         resultText = $"{result.NumericValue} {result.Abbreviation}";
     }

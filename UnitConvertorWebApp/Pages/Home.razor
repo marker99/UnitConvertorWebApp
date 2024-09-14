@@ -1,23 +1,50 @@
 ﻿@page "/"
-@using UnitConvertorWebApp.Pages.Converters
+@using UnitConvertorWebApp.Pages
 
 <PageTitle>Home</PageTitle>
 
-@* <MudText Typo="Typo.h4" style="color: #006661">Welcome to the Unit Converter</MudText> *@
-<MudText Typo="Typo.h4">Welcome to the Unit Converter</MudText>
+<MudGrid>
+    <!-- First row: Welcome message and button -->
+    <MudItem xs="12">
+        <MudGrid>
+            <!-- Welcome message -->
+            <MudItem xs="12" sm="9">
+                <MudText Typo="Typo.h5">Here you can convert various units</MudText>
+            </MudItem>
 
-<MudText Typo="Typo.body1" Class="mb-4">Here you can convert various units</MudText>
+            <!-- Button on the far right side -->
+            <MudItem xs="12" sm="3" Class="d-flex justify-end">
+                <MudButton OnClick="ToggleView" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small">
+                    @currentViewButtonText
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+</MudGrid>
 
-<MudDivider Class="my-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" />
+<!-- Divider -->
+<MudDivider Class="mt-3 mb-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" /> 
 
-@* Distance Converter Section  *@
-<DistanceConverter />
+<!-- Switchable view components -->
+@if (isCompactView)
+{
+    <Compact />
+}
+else
+{
+    <Dynamic />
+}
 
-@* Temperature Converter Section  *@
-<TemperatureConverter />
 
-@* Weight Convertor Section *@
-<WeightConverter />
 
-@* Time Convertor Section *@
-<TimeConverter />
+@code {
+    private bool isCompactView = true;
+    private string currentViewButtonText => isCompactView ? "Switch to List View" : "Switch to Compact View";
+
+    private void ToggleView()
+    {
+        isCompactView = !isCompactView;
+    }
+}
+
+

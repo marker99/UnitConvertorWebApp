@@ -7,18 +7,26 @@
 @page "/compact"
 
 <MudGrid>
-    @* Left side *@
+    <!-- Left side with search functionality -->
     <MudItem xs="12" sm="4">
         <MudCard Class="full-height">
             <MudCardHeader Class="mud-theme-primary">
                 <MudText Typo="Typo.h6">Quantity</MudText>
             </MudCardHeader>
 
-            <MudList Dense T="string" Color="Color.Primary">
-                @* <MudListSubheader >Quantity</MudListSubheader> *@
-                @foreach (var quantity in quantities)
+            <MudTextField Value="@searchText"
+                          Label="Search Quantities"
+                          Variant="Variant.Filled" Clearable="true" AdornmentColor="Color.Primary"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          TextChanged="OnSearchTextChanged" Immediate="true" />
+
+            <MudList Dense="true" T="string" Color="Color.Primary">
+                @foreach (var quantity in filteredQuantities)
                 {
-                    <MudListItem @onclick="(() => SelectQuantity(quantity))" Selected="@isSelected(quantity)">
+                    <MudListItem @onclick="(() => SelectQuantity(quantity))"
+                                 Selected="@isSelected(quantity)"
+                                 Class="@(isSelected(quantity) ? "selected-item" : "")">
                         @quantity
                     </MudListItem>
                 }
@@ -26,23 +34,23 @@
         </MudCard>
     </MudItem>
 
-    @* Right side *@
+    <!-- Right side -->
     <MudItem xs="12" sm="8">
-
         @if (selectedQuantity != null)
         {
             <MudGrid Spacing="4">
-                @* From list *@
+                <!-- From list -->
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
                             <MudText Typo="Typo.h6">From</MudText>
                         </MudCardHeader>
-                        <MudList Dense T="string" Color="Color.Primary">
-                            @* <MudListSubheader>From</MudListSubheader> *@
+                        <MudList Dense="true" T="string" Color="Color.Primary">
                             @foreach (var unit in fromUnits)
                             {
-                                <MudListItem @onclick="(() => SelectFromUnit(unit))" Selected="@isFromUnitSelected(unit)">
+                                <MudListItem @onclick="(() => SelectFromUnit(unit))"
+                                             Selected="@isFromUnitSelected(unit)"
+                                             Class="@(isFromUnitSelected(unit) ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
@@ -50,17 +58,18 @@
                     </MudCard>
                 </MudItem>
 
-                @* To list *@
+                <!-- To list -->
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
                             <MudText Typo="Typo.h6">To</MudText>
                         </MudCardHeader>
-                        <MudList Dense T="string" Color="Color.Primary">
-                            @* <MudListSubheader>To</MudListSubheader> *@
+                        <MudList Dense="true" T="string" Color="Color.Primary">
                             @foreach (var unit in toUnits)
                             {
-                                <MudListItem @onclick="(() => SelectToUnit(unit))" Selected="@isToUnitSelected(unit)">
+                                <MudListItem @onclick="(() => SelectToUnit(unit))"
+                                             Selected="@isToUnitSelected(unit)"
+                                             Class="@(isToUnitSelected(unit) ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
@@ -68,21 +77,21 @@
                     </MudCard>
                 </MudItem>
 
-                @* Value input *@
+                <!-- Value input -->
                 <MudItem xs="6">
                     <MudCard>
                         <MudTextField @bind-Value="inputValue" Label="Value" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
 
-                @* Result *@
+                <!-- Result -->
                 <MudItem xs="6">
                     <MudCard>
-                        <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled" />
+                        <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled"/>
                     </MudCard>
                 </MudItem>
 
-                @* Convert button *@
+                <!-- Convert button -->
                 <MudItem xs="12" Class="d-flex justify-center">
                     <MudButton OnClick="ConvertUnits" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
                 </MudItem>
@@ -93,6 +102,7 @@
 
 @code {
     private List<string> quantities;
+    private List<string> filteredQuantities = new();
     private List<string> fromUnits = new();
     private List<string> toUnits = new();
     private string selectedQuantity;
@@ -100,16 +110,33 @@
     private string selectedToUnit;
     private double inputValue;
     private string resultText = string.Empty;
+    private string searchText = string.Empty;
 
     protected override void OnInitialized()
     {
         // Initialize all quantities
         quantities = Quantity.Names.ToList();
+        filteredQuantities = new List<string>(quantities);  // Initialize filtered list
 
         // Select the first quantity by default
         if (quantities.Any())
         {
             SelectQuantity(quantities.FirstOrDefault());
+        }
+    }
+
+    // Filter the quantities based on the search input
+    private void OnSearchTextChanged(string newText)
+    {
+        searchText = newText;
+
+        if (string.IsNullOrWhiteSpace(searchText))
+        {
+            filteredQuantities = new List<string>(quantities);
+        }
+        else
+        {
+            filteredQuantities = quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
         }
     }
 

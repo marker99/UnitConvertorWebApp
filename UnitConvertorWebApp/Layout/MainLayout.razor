@@ -9,7 +9,7 @@
 
 <MudLayout>
     <MudAppBar Elevation="0">
-        <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
+        <MudText Typo="Typo.h5" Class="ml-3">Welcome to the Unit Converter</MudText>
         <MudSpacer />
         <MudToggleIconButton @bind-Toggled="_isDarkMode" Color="Color.Inherit" Icon="@Icons.Material.Filled.DarkMode"
                              ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Default" title="@(_isDarkMode ? "Light mode" : "Dark mode")" />
@@ -25,7 +25,6 @@
 
 @code {
     private bool _isDarkMode;
-    // private MudThemeProvider _mudThemeProvider;
 
     MudTheme MyCustomTheme = new MudTheme()
         {
@@ -39,7 +38,10 @@
                 Primary = "#ab542e",
                 Surface = "#F5F5F5",
                 Divider = "#ab542e",
-                TableHover = "#ab542e"
+
+                TableHover = "#ab542e",
+                LinesDefault = "#ab542e",
+                
             },
 
             PaletteDark = new PaletteDark()
@@ -50,10 +52,12 @@
                 Primary = "#ab542e",
                 Surface = "#222222",
                 Divider = "#ab542e",
-                TableHover = "#ab542e"
+
+                TableHover = "#ab542e",
+                LinesDefault = "#ab542e"
+
             }
         };
-
 
     protected override async Task OnInitializedAsync()
     {

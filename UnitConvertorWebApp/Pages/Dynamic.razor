@@ -6,45 +6,85 @@
 
 @page "/dynamic"
 
-@foreach (var quantity in quantities)
-{
-    <ConversionComponent TitleOfCard="@quantity" 
-                         Units="@GetUnitsForQuantity(quantity)" 
-                         DefaultFromUnit="@GetDefaultFromUnit(quantity)" 
-                         DefaultToUnit="@GetDefaultToUnit(quantity)" 
+<MudTextField @bind-Value="searchText"
+              Label="Search Quantities"
+              Variant="Variant.Filled"
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              Class="mb-4"
+              DebounceInterval="300"
+              OnDebounceIntervalElapsed="@OnSearchChanged"
+              Immediate="true" />
+
+<MudVirtualize Items="displayedQuantities" Context="quantity" OverscanCount="5" ItemSize="100">
+    <ConversionComponent TitleOfCard="@quantity"
+                         Units="@GetUnitsForQuantity(quantity)"
+                         DefaultFromUnit="@GetDefaultFromUnit(quantity)"
+                         DefaultToUnit="@GetDefaultToUnit(quantity)"
                          Convert="(value, fromUnit, toUnit) => ConvertValue(quantity, value, fromUnit, toUnit)" />
-}
+</MudVirtualize>
 
 @code {
-    private List<string> quantities;
+    private List<string> allQuantities;
+    private List<string> displayedQuantities;
+    private string searchText = string.Empty;
+    private Dictionary<string, List<string>> quantityUnitsCache = new Dictionary<string, List<string>>();
+    private const int InitialDisplayCount = 20;
+    private const int LoadMoreIncrement = 20;
 
     protected override void OnInitialized()
     {
-        // Get all available quantities from UnitsNet
-        quantities = Quantity.Names.ToList();
+        allQuantities = Quantity.Names.ToList();
+        displayedQuantities = new List<string>(allQuantities.Take(InitialDisplayCount));
     }
 
     private List<string> GetUnitsForQuantity(string quantity)
     {
-        var quantityInfo = Quantity.ByName[quantity];
-        return quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
+        if (!quantityUnitsCache.TryGetValue(quantity, out var units))
+        {
+            var quantityInfo = Quantity.ByName[quantity];
+            units = quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
+            quantityUnitsCache[quantity] = units;
+        }
+        return units;
     }
 
-    private string GetDefaultFromUnit(string quantity)
-    {
-        var units = GetUnitsForQuantity(quantity);
-        return units.FirstOrDefault() ?? string.Empty;
-    }
+    private string GetDefaultFromUnit(string quantity) => GetUnitsForQuantity(quantity).FirstOrDefault() ?? string.Empty;
 
-    private string GetDefaultToUnit(string quantity)
-    {
-        var units = GetUnitsForQuantity(quantity);
-        return units.Skip(1).FirstOrDefault() ?? string.Empty;
-    }
+    private string GetDefaultToUnit(string quantity) => GetUnitsForQuantity(quantity).Skip(1).FirstOrDefault() ?? string.Empty;
 
     private ConversionResult ConvertValue(string quantity, double value, string fromUnit, string toUnit)
+        => DynamicConversionService.Convert(quantity, value, fromUnit, toUnit);
+
+    private async Task OnSearchChanged(string value)
     {
-        // Use the dynamic conversion service to convert the value
-        return DynamicConversionService.Convert(quantity, value, fromUnit, toUnit);
+        searchText = value;
+        await InvokeAsync(() =>
+        {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                displayedQuantities = new List<string>(allQuantities.Take(InitialDisplayCount));
+            }
+            else
+            {
+                displayedQuantities = allQuantities
+                    .Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+            StateHasChanged();
+        });
+    }
+
+    private async Task LoadMoreQuantities()
+    {
+        if (string.IsNullOrWhiteSpace(searchText) && displayedQuantities.Count < allQuantities.Count)
+        {
+            await InvokeAsync(() =>
+            {
+                int currentCount = displayedQuantities.Count;
+                displayedQuantities.AddRange(allQuantities.Skip(currentCount).Take(LoadMoreIncrement));
+                StateHasChanged();
+            });
+        }
     }
 }

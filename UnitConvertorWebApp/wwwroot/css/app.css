@@ -112,12 +112,13 @@ code {
 }*/
 
 .full-height {
-    max-height: 600px; /* Adjust based on preference */
+    /*max-height: 600px;*/ /* Adjust based on preference */
+    max-height: 75vh;
     overflow-y: auto;
 }
 
 .unit-card {
-    max-height: 450px; /* Adjust based on preference */
+    max-height: 60vh; /* Adjust based on preference */
     overflow-y: auto; /* Add scrolling for long lists */
 }
 
@@ -126,3 +127,9 @@ MudCard.full-height .mud-list {
     flex-grow: 1; /* Make the list grow within its parent container */
     overflow-y: auto; /* Add scrolling if necessary */
 }
+
+.selected-item {
+    background-color: rgba(var(--mud-palette-primary-rgb), 0.7) !important; /* Lighter primary */
+    color: var(--mud-palette-primary-text) !important; /* Ensure text contrast */
+}
+

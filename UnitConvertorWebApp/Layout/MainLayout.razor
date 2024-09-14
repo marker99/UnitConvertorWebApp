@@ -13,7 +13,6 @@
         <MudSpacer />
         <MudToggleIconButton @bind-Toggled="_isDarkMode" Color="Color.Inherit" Icon="@Icons.Material.Filled.DarkMode"
                              ToggledIcon="@Icons.Material.Filled.LightMode" ToggledColor="Color.Default" title="@(_isDarkMode ? "Light mode" : "Dark mode")" />
-        @* <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" /> *@
     </MudAppBar>
 
     <MudMainContent>
@@ -72,19 +71,4 @@
             _isDarkMode = bool.TryParse(isDarkMode, out var result) && result;
         }
     }
-    // protected override async Task OnAfterRenderAsync(bool firstRender)
-    // {
-    //     if (firstRender)
-    //     {
-    //         _isDarkMode = await MyCustomTheme.GetSystemPreference();
-    //         StateHasChanged();
-    //     }
-    // }
-
-    // private Task OnSystemPreferenceChanged(bool newValue)
-    // {
-    //     _isDarkMode = newValue;
-    //     StateHasChanged();
-    //     return Task.CompletedTask;
-    // }
 }

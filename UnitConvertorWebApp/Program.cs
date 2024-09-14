@@ -17,9 +17,6 @@ builder.Services.AddMudServices();
 #region Register services
 
 builder.Services.AddScoped<IConversionService, ConversionService>();
-builder.Services.AddScoped<ITemperatureConversionService, TemperatureConversionService>();
-builder.Services.AddScoped<IWeightConversionService, WeightConversionService>();
-builder.Services.AddScoped<ITimeConversionService, TimeConversionService>();
 
 #endregion
 

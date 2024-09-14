@@ -28,13 +28,12 @@
 <!-- Switchable view components -->
 @if (isCompactView)
 {
-    <Compact />
+    <CompactView />
 }
 else
 {
-    <Dynamic />
+    <ListView />
 }
-
 
 
 @code {

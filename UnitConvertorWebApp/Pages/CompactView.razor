@@ -1,8 +1,7 @@
 ﻿@using UnitConvertorWebApp.Models
-@using UnitConvertorWebApp.Pages.Converters
 @using UnitConvertorWebApp.Services
 @using UnitsNet
-@inject IConversionService DynamicConversionService
+@inject IConversionService ConversionService
 
 @page "/compact"
 
@@ -183,7 +182,7 @@
     {
         if (!string.IsNullOrEmpty(selectedQuantity) && !string.IsNullOrEmpty(selectedFromUnit) && !string.IsNullOrEmpty(selectedToUnit))
         {
-            var result = DynamicConversionService.Convert(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
+            var result = ConversionService.Convert(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
             resultText = $"{result.NumericValue} {result.Abbreviation}";
         }
     }

@@ -1,10 +1,10 @@
 ﻿@using UnitConvertorWebApp.Models
-@using UnitConvertorWebApp.Pages.Converters
+@using UnitConvertorWebApp.Pages.Components
 @using UnitConvertorWebApp.Services
 @using UnitsNet
-@inject IConversionService DynamicConversionService
+@inject IConversionService ConversionService
 
-@page "/dynamic"
+@page "/list"
 
 <MudTextField @bind-Value="searchText"
               Label="Search Quantities"
@@ -54,7 +54,7 @@
     private string GetDefaultToUnit(string quantity) => GetUnitsForQuantity(quantity).Skip(1).FirstOrDefault() ?? string.Empty;
 
     private ConversionResult ConvertValue(string quantity, double value, string fromUnit, string toUnit)
-        => DynamicConversionService.Convert(quantity, value, fromUnit, toUnit);
+        => ConversionService.Convert(quantity, value, fromUnit, toUnit);
 
     private async Task OnSearchChanged(string value)
     {

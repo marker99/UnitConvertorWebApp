@@ -13,11 +13,5 @@ namespace UnitConvertorWebApp.Services
         /// <param name="toUnit"></param>
         /// <returns></returns>
         ConversionResult Convert(string quantityName, double value, string fromUnit, string toUnit);
-
-        public ConversionResult ConvertDistance(double value, string fromUnit, string toUnit);
-        public ConversionResult ConvertWeight(double value, string fromUnit, string toUnit);
-        public ConversionResult ConvertTemperature(double value, string fromUnit, string toUnit);
-        //public ConversionResult ConvertTime(double value, string fromUnit, string toUnit);
-
     }
 }

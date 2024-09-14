@@ -7,57 +7,87 @@
 @page "/compact"
 
 <MudGrid>
+    @* Left side *@
     <MudItem xs="12" sm="4">
-        <MudPaper Class="p-3">
-            <MudList T="string">
-                <MudListSubheader>Quantity</MudListSubheader>
+        <MudCard Class="full-height">
+            <MudCardHeader Class="mud-theme-primary">
+                <MudText Typo="Typo.h6">Quantity</MudText>
+            </MudCardHeader>
+
+            <MudList Dense T="string" Color="Color.Primary">
+                @* <MudListSubheader >Quantity</MudListSubheader> *@
                 @foreach (var quantity in quantities)
                 {
-                <MudListItem @onclick="(() => SelectQuantity(quantity))" Selected="@isSelected(quantity)">
-                    @quantity
-                </MudListItem>
+                    <MudListItem @onclick="(() => SelectQuantity(quantity))" Selected="@isSelected(quantity)">
+                        @quantity
+                    </MudListItem>
                 }
             </MudList>
-        </MudPaper>
+        </MudCard>
     </MudItem>
 
+    @* Right side *@
     <MudItem xs="12" sm="8">
-        <MudPaper Class="p-3">
-            @if (selectedQuantity != null)
-            {
-                <MudGrid Spacing="2">
-                    <MudItem xs="6">
-                        <MudSelect @bind-Value="selectedFromUnit" Label="From" Variant="Variant.Filled">
+
+        @if (selectedQuantity != null)
+        {
+            <MudGrid Spacing="4">
+                @* From list *@
+                <MudItem xs="6">
+                    <MudCard Class="unit-card">
+                        <MudCardHeader Class="mud-theme-primary">
+                            <MudText Typo="Typo.h6">From</MudText>
+                        </MudCardHeader>
+                        <MudList Dense T="string" Color="Color.Primary">
+                            @* <MudListSubheader>From</MudListSubheader> *@
                             @foreach (var unit in fromUnits)
                             {
-                                <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                <MudListItem @onclick="(() => SelectFromUnit(unit))" Selected="@isFromUnitSelected(unit)">
+                                    @unit
+                                </MudListItem>
                             }
-                        </MudSelect>
-                    </MudItem>
+                        </MudList>
+                    </MudCard>
+                </MudItem>
 
-                    <MudItem xs="6">
-                        <MudSelect @bind-Value="selectedToUnit" Label="To" Variant="Variant.Filled">
+                @* To list *@
+                <MudItem xs="6">
+                    <MudCard Class="unit-card">
+                        <MudCardHeader Class="mud-theme-primary">
+                            <MudText Typo="Typo.h6">To</MudText>
+                        </MudCardHeader>
+                        <MudList Dense T="string" Color="Color.Primary">
+                            @* <MudListSubheader>To</MudListSubheader> *@
                             @foreach (var unit in toUnits)
                             {
-                                <MudSelectItem Value="@unit">@unit</MudSelectItem>
+                                <MudListItem @onclick="(() => SelectToUnit(unit))" Selected="@isToUnitSelected(unit)">
+                                    @unit
+                                </MudListItem>
                             }
-                        </MudSelect>
-                    </MudItem>
+                        </MudList>
+                    </MudCard>
+                </MudItem>
 
-                    <MudItem xs="6">
+                @* Value input *@
+                <MudItem xs="6">
+                    <MudCard>
                         <MudTextField @bind-Value="inputValue" Label="Value" Variant="Variant.Filled" />
-                    </MudItem>
+                    </MudCard>
+                </MudItem>
 
-                    <MudItem xs="6">
+                @* Result *@
+                <MudItem xs="6">
+                    <MudCard>
                         <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled" />
-                    </MudItem>
+                    </MudCard>
+                </MudItem>
 
-                    <MudItem xs="12" Class="d-flex justify-center">
-                        <MudButton OnClick="ConvertUnits" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
-                    </MudItem>
-                </MudGrid>
-            }
-        </MudPaper>
+                @* Convert button *@
+                <MudItem xs="12" Class="d-flex justify-center">
+                    <MudButton OnClick="ConvertUnits" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
+                </MudItem>
+            </MudGrid>
+        }
     </MudItem>
 </MudGrid>
 
@@ -75,6 +105,12 @@
     {
         // Initialize all quantities
         quantities = Quantity.Names.ToList();
+
+        // Select the first quantity by default
+        if (quantities.Any())
+        {
+            SelectQuantity(quantities.FirstOrDefault());
+        }
     }
 
     private void SelectQuantity(string quantity)
@@ -86,7 +122,7 @@
         fromUnits = quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
         toUnits = new List<string>(fromUnits);
 
-        // Set default selections
+        // Set default selections for units
         selectedFromUnit = fromUnits.FirstOrDefault();
         selectedToUnit = toUnits.Skip(1).FirstOrDefault();
     }
@@ -94,6 +130,26 @@
     private bool isSelected(string quantity)
     {
         return selectedQuantity == quantity;
+    }
+
+    private void SelectFromUnit(string unit)
+    {
+        selectedFromUnit = unit;
+    }
+
+    private bool isFromUnitSelected(string unit)
+    {
+        return selectedFromUnit == unit;
+    }
+
+    private void SelectToUnit(string unit)
+    {
+        selectedToUnit = unit;
+    }
+
+    private bool isToUnitSelected(string unit)
+    {
+        return selectedToUnit == unit;
     }
 
     private void ConvertUnits()

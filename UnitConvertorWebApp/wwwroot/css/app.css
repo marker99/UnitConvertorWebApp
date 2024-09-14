@@ -102,9 +102,27 @@ code {
     color: #c02d76;
 }
 
-/*.conversion-container {
-    padding: 16px;
-    border: 1px solid #ddd;
-    border-radius: 16px;
-    background-color: red;
+
+
+/* Ensure the container takes up the entire viewport height */
+/*.conversion-page {
+    height: 100vh;*/ /* Viewport height */
+    /*display: flex;
+    flex-direction: column;
 }*/
+
+.full-height {
+    max-height: 600px; /* Adjust based on preference */
+    overflow-y: auto;
+}
+
+.unit-card {
+    max-height: 450px; /* Adjust based on preference */
+    overflow-y: auto; /* Add scrolling for long lists */
+}
+
+/* Ensure the list of quantities is scrollable */
+MudCard.full-height .mud-list {
+    flex-grow: 1; /* Make the list grow within its parent container */
+    overflow-y: auto; /* Add scrolling if necessary */
+}

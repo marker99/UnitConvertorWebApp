@@ -11,17 +11,16 @@
 
 @if (filteredQuantities != null)
 {
-    @* <MudVirtualize Items="filteredQuantities" Context="quantity" OverscanCount="5" > *@
-    <div style="max-height: 800px; overflow-y:scroll">
+    <MudItem Class="mb-2">
         <Virtualize Items="filteredQuantities" Context="quantity">
             <ConversionComponent TitleOfCard="@quantity"
                                  Units="@GetUnitsForQuantity(quantity)"
                                  DefaultFromUnit="@GetDefaultFromUnit(quantity)"
                                  DefaultToUnit="@GetDefaultToUnit(quantity)"
                                  Convert="(value, fromUnit, toUnit) => ConvertValue(quantity, value, fromUnit, toUnit)" />
-            @* </MudVirtualize> *@
+
         </Virtualize>
-    </div>
+    </MudItem>
 }
 
 @code {

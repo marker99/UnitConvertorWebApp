@@ -129,25 +129,5 @@ MudCard.full-height .mud-list {
 }
 
 
-/* --------------- Loading and fading the pages in --------------- */
-/*.fade-enter {
-    opacity: 0;
-}
+/* --------------- List view page --------------- */
 
-.fade-enter-active {
-    opacity: 1;
-    transition: opacity 0.5s ease-in-out;
-}
-
-.fade-exit {
-    opacity: 1;
-}
-
-.fade-exit-active {
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-}
-
-.view {
-    transition: opacity 0.5s ease-in-out;
-}*/

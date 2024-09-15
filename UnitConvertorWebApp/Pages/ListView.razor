@@ -3,27 +3,25 @@
 @using UnitConvertorWebApp.Services
 @using UnitsNet
 @inject IConversionService DynamicConversionService
-
 @page "/dynamic"
 
-<MudTextField @bind-Value="searchText"
-              Label="Search Quantities"
-              Variant="Variant.Filled"
-              Adornment="Adornment.Start"
-              AdornmentIcon="@Icons.Material.Filled.Search"
-              Class="mb-4" Clearable="true"
-              DebounceInterval="300"
-              OnDebounceIntervalElapsed="@FilterQuantities" />
+<MudTextField Class="mb-4" @bind-Value="searchText" Label="Search Quantities" Variant="Variant.Filled"
+              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+              Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="@FilterQuantities" />
 
 @if (filteredQuantities != null)
 {
-    <MudVirtualize Items="filteredQuantities" Context="quantity" OverscanCount="5" >
-        <ConversionComponent TitleOfCard="@quantity" 
-                             Units="@GetUnitsForQuantity(quantity)" 
-                             DefaultFromUnit="@GetDefaultFromUnit(quantity)" 
-                             DefaultToUnit="@GetDefaultToUnit(quantity)" 
-                             Convert="(value, fromUnit, toUnit) => ConvertValue(quantity, value, fromUnit, toUnit)" />
-    </MudVirtualize>
+    @* <MudVirtualize Items="filteredQuantities" Context="quantity" OverscanCount="5" > *@
+    <div style="max-height: 800px; overflow-y:scroll">
+        <Virtualize Items="filteredQuantities" Context="quantity">
+            <ConversionComponent TitleOfCard="@quantity"
+                                 Units="@GetUnitsForQuantity(quantity)"
+                                 DefaultFromUnit="@GetDefaultFromUnit(quantity)"
+                                 DefaultToUnit="@GetDefaultToUnit(quantity)"
+                                 Convert="(value, fromUnit, toUnit) => ConvertValue(quantity, value, fromUnit, toUnit)" />
+            @* </MudVirtualize> *@
+        </Virtualize>
+    </div>
 }
 
 @code {
@@ -32,10 +30,18 @@
     private string searchText = string.Empty;
     private Dictionary<string, List<string>> quantityUnitsCache = new Dictionary<string, List<string>>();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        quantities = Quantity.Names.ToList();
-        filteredQuantities = new List<string>(quantities);
+        await LoadQuantitiesAsync();
+    }
+
+    private async Task LoadQuantitiesAsync()
+    {
+        await Task.Run(() =>
+        {
+            quantities = Quantity.Names.ToList();
+            filteredQuantities = new List<string>(quantities); // Initially load only 20 items
+        });
     }
 
     private List<string> GetUnitsForQuantity(string quantity)
@@ -66,11 +72,14 @@
         return DynamicConversionService.Convert(quantity, value, fromUnit, toUnit);
     }
 
-    private void FilterQuantities()
+    private async Task FilterQuantities()
     {
-        filteredQuantities = string.IsNullOrWhiteSpace(searchText)
-            ? new List<string>(quantities)
-            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+        await Task.Run(() =>
+        {
+            filteredQuantities = string.IsNullOrWhiteSpace(searchText)
+                ? new List<string>(quantities.Take(20))
+                : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(20).ToList();
+        });
         StateHasChanged();
     }
 }

@@ -4,9 +4,10 @@
 @using UnitConvertorWebApp.Services
 @using UnitsNet
 @inject IConversionService ConversionService
+@inject IFavoritesService FavoritesService
 
 <MudTextField Class="mb-4" @bind-Value="searchText" Label="Search Quantities" Variant="Variant.Filled"
-              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
               Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="FilterQuantities" />
 
 @if (filteredQuantities != null)
@@ -20,7 +21,9 @@
                                      Units="@data.Units"
                                      DefaultFromUnit="@data.DefaultFromUnit"
                                      DefaultToUnit="@data.DefaultToUnit"
-                                     Convert="@((value, fromUnit, toUnit) => ConvertValueAsync(quantity, value, fromUnit, toUnit))" />
+                                     IsFavorite="@favorites.Contains(quantity, StringComparer.OrdinalIgnoreCase)"
+                                     OnToggleFavorite="@(async () => await ToggleFavoriteAsync(quantity))"
+                                     Convert="@( (value, fromUnit, toUnit) => ConvertValueAsync(quantity, value, fromUnit, toUnit))" />
             }
             else
             {
@@ -31,28 +34,34 @@
 }
 
 @code {
-    private List<string> quantities;
-    private List<string> filteredQuantities;
+    private List<string> quantities = new();
+    private List<string> filteredQuantities = new();
+    private List<string> favorites = new();
     private string searchText = string.Empty;
-    private Dictionary<string, QuantityData> quantityData = new Dictionary<string, QuantityData>();
+    private Dictionary<string, QuantityData> quantityData = new();
 
     private class QuantityData
     {
-        public List<string> Units { get; set; }
-        public string DefaultFromUnit { get; set; }
-        public string DefaultToUnit { get; set; }
+        public List<string> Units { get; set; } = new();
+        public string DefaultFromUnit { get; set; } = string.Empty;
+        public string DefaultToUnit { get; set; } = string.Empty;
     }
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadFavoritesAsync();
         await LoadQuantitiesAsync();
     }
 
     private async Task LoadQuantitiesAsync()
     {
         quantities = await ConversionService.GetAvailableQuantitiesAsync();
-        filteredQuantities = new List<string>(quantities);
-        await LoadQuantityDataAsync(filteredQuantities);
+        await FilterQuantities();
+    }
+
+    private async Task LoadFavoritesAsync()
+    {
+        favorites = await FavoritesService.GetFavoritesAsync();
     }
 
     private async Task LoadQuantityDataAsync(IEnumerable<string> quantitiesToLoad)
@@ -74,11 +83,36 @@
 
     private async Task FilterQuantities()
     {
-        filteredQuantities = string.IsNullOrWhiteSpace(searchText)
-            ? new List<string>(quantities.Take(20))
-            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(20).ToList();
+        if (quantities == null) quantities = new List<string>();
+        if (favorites == null) favorites = new List<string>();
+
+        IEnumerable<string> filtered = string.IsNullOrWhiteSpace(searchText)
+            ? quantities
+            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+        var favoriteQuantities = favorites.Intersect(filtered, StringComparer.OrdinalIgnoreCase).ToList();
+        var nonFavoriteQuantities = filtered.Except(favorites, StringComparer.OrdinalIgnoreCase).ToList();
+
+        filteredQuantities = favoriteQuantities.Concat(nonFavoriteQuantities).ToList();
 
         await LoadQuantityDataAsync(filteredQuantities);
+        StateHasChanged();
+    }
+
+    private async Task ToggleFavoriteAsync(string quantity)
+    {
+        if (favorites.Contains(quantity, StringComparer.OrdinalIgnoreCase))
+        {
+            await FavoritesService.RemoveFavoriteAsync(quantity);
+            favorites.Remove(quantity);
+        }
+        else
+        {
+            await FavoritesService.AddFavoriteAsync(quantity);
+            favorites.Add(quantity);
+        }
+
+        await FilterQuantities();
         StateHasChanged();
     }
 

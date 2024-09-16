@@ -1,9 +1,14 @@
 ﻿@using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Services
+@using UnitConvertorWebApp.Pages.Components
+@inject IFavoritesService FavoritesService
 
 <MudCard Class="mx-4" Elevation="1" Style="border-radius: 24px">
     <MudCardContent>
-        <MudText Typo="Typo.h5" Class="mb-4">@TitleOfCard</MudText>
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.h5">@TitleOfCard</MudText>
+            <FavoriteButton IsFavorite="IsFavorite" OnToggleFavorite="ToggleFavorite" />
+        </div>
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">
                 <MudSelect T="string" Value="selectedFromUnit" ValueChanged="OnFromUnitChanged" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
@@ -86,4 +91,19 @@
             resultText = $"Error: {ex.Message}";
         }
     }
+
+    #region Favorites
+
+    [Parameter] public bool IsFavorite { get; set; }
+    [Parameter] public EventCallback OnToggleFavorite { get; set; } // This handles the event from parent
+
+    private async Task ToggleFavorite()
+    {
+        if (OnToggleFavorite.HasDelegate)
+        {
+            await OnToggleFavorite.InvokeAsync(); // Invokes the parent method to toggle favorite
+        }
+    }
+
+    #endregion
 }

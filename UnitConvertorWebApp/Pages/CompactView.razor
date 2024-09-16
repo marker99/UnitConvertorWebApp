@@ -1,43 +1,43 @@
 ﻿@page "/compact"
 @using UnitConvertorWebApp.Models
+@using UnitConvertorWebApp.Pages.Components
 @using UnitConvertorWebApp.Services
 @using UnitsNet
 @inject IConversionService ConversionService
+@inject IFavoritesService FavoritesService
 
 <MudGrid>
+    @* Left Side *@
     <MudItem xs="12" sm="4">
         <MudCard Class="full-height">
             <MudCardHeader Class="mud-theme-primary">
                 <MudText Typo="Typo.h6">Quantity</MudText>
             </MudCardHeader>
 
-            <MudTextField @bind-Value="searchText"
-                          Label="Search Quantities"
-                          Variant="Variant.Filled"
-                          Clearable="true"
-                          AdornmentColor="Color.Primary"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search"
-                          OnDebounceIntervalElapsed="FilterQuantities"
-                          DebounceInterval="300" />
+            <MudTextField @bind-Value="searchText" Label="Search Quantities" Variant="Variant.Filled" Clearable="true"
+                          AdornmentColor="Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          OnDebounceIntervalElapsed="FilterQuantities" DebounceInterval="300" />
 
             <MudList Dense="true" T="string" Color="Color.Primary">
                 @foreach (var quantity in filteredQuantities)
                 {
-                    <MudListItem @onclick="(() => SelectQuantityAsync(quantity))"
-                                 Selected="@(selectedQuantity == quantity)"
-                                 Class="@(selectedQuantity == quantity ? "selected-item" : "")">
-                        @quantity
+                    <MudListItem @onclick="(() => SelectQuantityAsync(quantity))" Selected="@(selectedQuantity == quantity)" Class="@(selectedQuantity == quantity ? "selected-item" : "")">
+                        <div class="d-flex justify-space-between align-center w-100">
+                            <MudText>@quantity</MudText>
+                            <FavoriteButton IsFavorite="favoritesMap[quantity]" OnToggleFavorite="() => ToggleFavoriteAsync(quantity)" />
+                        </div>
                     </MudListItem>
                 }
             </MudList>
         </MudCard>
     </MudItem>
 
+    @* Right Side *@
     <MudItem xs="12" sm="8">
         @if (selectedQuantity != null)
         {
             <MudGrid Spacing="4">
+                @* From List *@
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
@@ -46,16 +46,14 @@
                         <MudList Dense="true" T="string" Color="Color.Primary">
                             @foreach (var unit in fromUnits)
                             {
-                                <MudListItem @onclick="(() => selectedFromUnit = unit)"
-                                             Selected="@(selectedFromUnit == unit)"
-                                             Class="@(selectedFromUnit == unit ? "selected-item" : "")">
+                                <MudListItem @onclick="(() => selectedFromUnit = unit)" Selected="@(selectedFromUnit == unit)" Class="@(selectedFromUnit == unit ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
                         </MudList>
                     </MudCard>
                 </MudItem>
-
+                @* To List *@
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
@@ -64,28 +62,26 @@
                         <MudList Dense="true" T="string" Color="Color.Primary">
                             @foreach (var unit in toUnits)
                             {
-                                <MudListItem @onclick="(() => selectedToUnit = unit)"
-                                             Selected="@(selectedToUnit == unit)"
-                                             Class="@(selectedToUnit == unit ? "selected-item" : "")">
+                                <MudListItem @onclick="(() => selectedToUnit = unit)" Selected="@(selectedToUnit == unit)" Class="@(selectedToUnit == unit ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
                         </MudList>
                     </MudCard>
                 </MudItem>
-
+                @* Input Field *@
                 <MudItem xs="6">
                     <MudCard>
                         <MudTextField @bind-Value="inputValue" Label="Value" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
-
+                @* Result Field *@
                 <MudItem xs="6">
                     <MudCard>
                         <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
-
+                @* Convert Button *@
                 <MudItem xs="12" Class="d-flex justify-center">
                     <MudButton OnClick="ConvertUnitsAsync" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
                 </MudItem>
@@ -106,28 +102,80 @@
     private string resultText = string.Empty;
     private string searchText = string.Empty;
 
+    private Dictionary<string, bool> favoritesMap = new Dictionary<string, bool>();
+
     protected override async Task OnInitializedAsync()
     {
+        // Fetch all available quantities
         quantities = await ConversionService.GetAvailableQuantitiesAsync();
-        filteredQuantities = new List<string>(quantities);
 
-        if (quantities.Any())
+        // Fetch the favorites from local storage
+        var favorites = await FavoritesService.GetFavoritesAsync();
+        favoritesMap = quantities.ToDictionary(q => q, q => favorites.Contains(q));
+
+        // Apply the initial filtering (which sorts favorites on top)
+        await FilterQuantities();
+
+        // Select the first quantity from the filtered list if available
+        if (filteredQuantities.Any())
         {
-            await SelectQuantityAsync(quantities.First());
+            await SelectQuantityAsync(filteredQuantities.First());
         }
+    }
+
+    private async Task ToggleFavoriteAsync(string quantity)
+    {
+        // Toggle the favorite state for the selected quantity
+        favoritesMap[quantity] = !favoritesMap[quantity];
+
+        // Update the local storage via the FavoritesService
+        if (favoritesMap[quantity])
+        {
+            await FavoritesService.AddFavoriteAsync(quantity);
+        }
+        else
+        {
+            await FavoritesService.RemoveFavoriteAsync(quantity);
+        }
+
+        // Refilter and reorder the quantities
+        await FilterQuantities();
     }
 
     private async Task FilterQuantities()
     {
+        // Filter by search text
         filteredQuantities = string.IsNullOrWhiteSpace(searchText)
             ? new List<string>(quantities)
             : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
 
+        // Sort by favorites first
+        var favoriteQuantities = favoritesMap
+            .Where(kvp => kvp.Value && filteredQuantities.Contains(kvp.Key))
+            .Select(kvp => kvp.Key)
+            .ToList();
+
+        var nonFavoriteQuantities = filteredQuantities
+            .Where(q => !favoritesMap[q])
+            .ToList();
+
+        // Combine lists: favorites first, then non-favorites
+        filteredQuantities = favoriteQuantities.Concat(nonFavoriteQuantities).ToList();
+
+        // If the currently selected quantity is no longer in the filtered list, select the first one
+        if (!filteredQuantities.Contains(selectedQuantity))
+        {
+            await SelectQuantityAsync(filteredQuantities.FirstOrDefault());
+        }
+
+        // Update the state
         StateHasChanged();
     }
 
     private async Task SelectQuantityAsync(string quantity)
     {
+        if (quantity == null) return;
+
         selectedQuantity = quantity;
         fromUnits = await ConversionService.GetAvailableUnitsAsync(quantity);
         toUnits = new List<string>(fromUnits);

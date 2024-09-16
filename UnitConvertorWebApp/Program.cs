@@ -6,6 +6,7 @@ using UnitConvertorWebApp.Services;
 using UnitConvertorWebApp.Services.Implementations;
 using MudBlazor.Extensions;
 using MudExtensions.Services;
+using Blazored.LocalStorage;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -16,10 +17,12 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 
 builder.Services.AddMudServices();
 builder.Services.AddMudExtensions();
+builder.Services.AddBlazoredLocalStorage();
 
 #region Register services
 
 builder.Services.AddScoped<IConversionService, ConversionService>();
+builder.Services.AddScoped<IFavoritesService, FavoritesService>();
 
 #endregion
 

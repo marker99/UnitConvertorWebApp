@@ -1,7 +1,7 @@
 ﻿@page "/compact"
 @using UnitConvertorWebApp.Models
-@using UnitConvertorWebApp.Pages.Components
 @using UnitConvertorWebApp.Services
+@using UnitConvertorWebApp.Pages.Components
 @using UnitsNet
 @inject IConversionService ConversionService
 @inject IFavoritesService FavoritesService
@@ -24,7 +24,7 @@
                     <MudListItem @onclick="(() => SelectQuantityAsync(quantity))" Selected="@(selectedQuantity == quantity)" Class="@(selectedQuantity == quantity ? "selected-item" : "")">
                         <div class="d-flex justify-space-between align-center w-100">
                             <MudText>@quantity</MudText>
-                            <FavoriteButton IsFavorite="favoritesMap[quantity]" OnToggleFavorite="() => ToggleFavoriteAsync(quantity)" />
+                            <FavoriteButton IsFavorite="favoritesMap.GetValueOrDefault(quantity)" OnToggleFavorite="() => ToggleFavoriteAsync(quantity)" />
                         </div>
                     </MudListItem>
                 }
@@ -44,7 +44,7 @@
                             <MudText Typo="Typo.h6">From</MudText>
                         </MudCardHeader>
                         <MudList Dense="true" T="string" Color="Color.Primary">
-                            @foreach (var unit in fromUnits)
+                            @foreach (var unit in availableUnits)
                             {
                                 <MudListItem @onclick="(() => selectedFromUnit = unit)" Selected="@(selectedFromUnit == unit)" Class="@(selectedFromUnit == unit ? "selected-item" : "")">
                                     @unit
@@ -60,7 +60,7 @@
                             <MudText Typo="Typo.h6">To</MudText>
                         </MudCardHeader>
                         <MudList Dense="true" T="string" Color="Color.Primary">
-                            @foreach (var unit in toUnits)
+                            @foreach (var unit in availableUnits)
                             {
                                 <MudListItem @onclick="(() => selectedToUnit = unit)" Selected="@(selectedToUnit == unit)" Class="@(selectedToUnit == unit ? "selected-item" : "")">
                                     @unit
@@ -93,30 +93,21 @@
 @code {
     private List<string> quantities = new();
     private List<string> filteredQuantities = new();
-    private List<string> fromUnits = new();
-    private List<string> toUnits = new();
+    private List<string> availableUnits = new();
     private string selectedQuantity;
     private string selectedFromUnit;
     private string selectedToUnit;
     private double inputValue;
     private string resultText = string.Empty;
     private string searchText = string.Empty;
-
-    private Dictionary<string, bool> favoritesMap = new Dictionary<string, bool>();
+    private Dictionary<string, bool> favoritesMap = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Fetch all available quantities
         quantities = await ConversionService.GetAvailableQuantitiesAsync();
-
-        // Fetch the favorites from local storage
         var favorites = await FavoritesService.GetFavoritesAsync();
-        favoritesMap = quantities.ToDictionary(q => q, q => favorites.Contains(q));
-
-        // Apply the initial filtering (which sorts favorites on top)
+        favoritesMap = quantities.ToDictionary(q => q, q => favorites.Contains(q, StringComparer.OrdinalIgnoreCase));
         await FilterQuantities();
-
-        // Select the first quantity from the filtered list if available
         if (filteredQuantities.Any())
         {
             await SelectQuantityAsync(filteredQuantities.First());
@@ -125,10 +116,7 @@
 
     private async Task ToggleFavoriteAsync(string quantity)
     {
-        // Toggle the favorite state for the selected quantity
         favoritesMap[quantity] = !favoritesMap[quantity];
-
-        // Update the local storage via the FavoritesService
         if (favoritesMap[quantity])
         {
             await FavoritesService.AddFavoriteAsync(quantity);
@@ -137,38 +125,26 @@
         {
             await FavoritesService.RemoveFavoriteAsync(quantity);
         }
-
-        // Refilter and reorder the quantities
         await FilterQuantities();
     }
 
     private async Task FilterQuantities()
     {
-        // Filter by search text
         filteredQuantities = string.IsNullOrWhiteSpace(searchText)
             ? new List<string>(quantities)
             : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        // Sort by favorites first
-        var favoriteQuantities = favoritesMap
+        filteredQuantities = favoritesMap
             .Where(kvp => kvp.Value && filteredQuantities.Contains(kvp.Key))
             .Select(kvp => kvp.Key)
+            .Concat(filteredQuantities.Where(q => !favoritesMap.GetValueOrDefault(q)))
             .ToList();
 
-        var nonFavoriteQuantities = filteredQuantities
-            .Where(q => !favoritesMap[q])
-            .ToList();
-
-        // Combine lists: favorites first, then non-favorites
-        filteredQuantities = favoriteQuantities.Concat(nonFavoriteQuantities).ToList();
-
-        // If the currently selected quantity is no longer in the filtered list, select the first one
         if (!filteredQuantities.Contains(selectedQuantity))
         {
             await SelectQuantityAsync(filteredQuantities.FirstOrDefault());
         }
 
-        // Update the state
         StateHasChanged();
     }
 
@@ -177,19 +153,29 @@
         if (quantity == null) return;
 
         selectedQuantity = quantity;
-        fromUnits = await ConversionService.GetAvailableUnitsAsync(quantity);
-        toUnits = new List<string>(fromUnits);
+        availableUnits = await ConversionService.GetAvailableUnitsAsync(quantity);
 
-        selectedFromUnit = fromUnits.FirstOrDefault();
-        selectedToUnit = toUnits.Skip(1).FirstOrDefault();
+        selectedFromUnit = availableUnits.FirstOrDefault();
+        selectedToUnit = availableUnits.Skip(1).FirstOrDefault();
+
+        // Reset input and result
+        inputValue = 0;
+        resultText = string.Empty;
     }
 
     private async Task ConvertUnitsAsync()
     {
         if (!string.IsNullOrEmpty(selectedQuantity) && !string.IsNullOrEmpty(selectedFromUnit) && !string.IsNullOrEmpty(selectedToUnit))
         {
-            var result = await ConversionService.ConvertAsync(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
-            resultText = $"{result.NumericValue} {result.Abbreviation}";
+            try
+            {
+                var result = await ConversionService.ConvertAsync(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
+                resultText = $"{result.NumericValue:F2} {result.Abbreviation}";
+            }
+            catch (Exception ex)
+            {
+                resultText = $"Error: {ex.Message}";
+            }
         }
     }
 }

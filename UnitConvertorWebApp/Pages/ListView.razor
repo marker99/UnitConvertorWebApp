@@ -14,16 +14,14 @@
 {
     <MudItem Class="mb-2">
         <Virtualize Items="filteredQuantities" Context="quantity">
-            @if (quantityData.ContainsKey(quantity))
+            @if (quantityData.TryGetValue(quantity, out var data))
             {
-                var data = quantityData[quantity];
                 <ConversionComponent TitleOfCard="@quantity"
                                      Units="@data.Units"
                                      DefaultFromUnit="@data.DefaultFromUnit"
                                      DefaultToUnit="@data.DefaultToUnit"
-                                     IsFavorite="@favorites.Contains(quantity, StringComparer.OrdinalIgnoreCase)"
-                                     OnToggleFavorite="@(async () => await ToggleFavoriteAsync(quantity))"
-                                     Convert="@( (value, fromUnit, toUnit) => ConvertValueAsync(quantity, value, fromUnit, toUnit))" />
+                                     IsFavorite="@favorites.Contains(quantity)"
+                                     OnToggleFavorite="@(() => ToggleFavoriteAsync(quantity))" />
             }
             else
             {
@@ -36,7 +34,7 @@
 @code {
     private List<string> quantities = new();
     private List<string> filteredQuantities = new();
-    private List<string> favorites = new();
+    private HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
     private string searchText = string.Empty;
     private Dictionary<string, QuantityData> quantityData = new();
 
@@ -59,41 +57,31 @@
         await FilterQuantities();
     }
 
-    private async Task LoadFavoritesAsync()
-    {
-        favorites = await FavoritesService.GetFavoritesAsync();
-    }
+    private async Task LoadFavoritesAsync() => favorites = new HashSet<string>(await FavoritesService.GetFavoritesAsync(), StringComparer.OrdinalIgnoreCase);
 
     private async Task LoadQuantityDataAsync(IEnumerable<string> quantitiesToLoad)
     {
-        foreach (var quantity in quantitiesToLoad)
+        foreach (var quantity in quantitiesToLoad.Where(q => !quantityData.ContainsKey(q)))
         {
-            if (!quantityData.ContainsKey(quantity))
-            {
-                var units = await ConversionService.GetAvailableUnitsAsync(quantity);
-                quantityData[quantity] = new QuantityData
-                    {
-                        Units = units,
-                        DefaultFromUnit = units.FirstOrDefault() ?? string.Empty,
-                        DefaultToUnit = units.Skip(1).FirstOrDefault() ?? string.Empty
-                    };
-            }
+            var units = await ConversionService.GetAvailableUnitsAsync(quantity);
+            quantityData[quantity] = new QuantityData
+                {
+                    Units = units,
+                    DefaultFromUnit = units.FirstOrDefault() ?? string.Empty,
+                    DefaultToUnit = units.Skip(1).FirstOrDefault() ?? string.Empty
+                };
         }
     }
 
     private async Task FilterQuantities()
     {
-        if (quantities == null) quantities = new List<string>();
-        if (favorites == null) favorites = new List<string>();
-
         IEnumerable<string> filtered = string.IsNullOrWhiteSpace(searchText)
             ? quantities
             : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase));
 
-        var favoriteQuantities = favorites.Intersect(filtered, StringComparer.OrdinalIgnoreCase).ToList();
-        var nonFavoriteQuantities = filtered.Except(favorites, StringComparer.OrdinalIgnoreCase).ToList();
-
-        filteredQuantities = favoriteQuantities.Concat(nonFavoriteQuantities).ToList();
+        filteredQuantities = favorites.Intersect(filtered)
+            .Concat(filtered.Except(favorites))
+            .ToList();
 
         await LoadQuantityDataAsync(filteredQuantities);
         StateHasChanged();
@@ -101,7 +89,7 @@
 
     private async Task ToggleFavoriteAsync(string quantity)
     {
-        if (favorites.Contains(quantity, StringComparer.OrdinalIgnoreCase))
+        if (favorites.Contains(quantity))
         {
             await FavoritesService.RemoveFavoriteAsync(quantity);
             favorites.Remove(quantity);
@@ -113,11 +101,6 @@
         }
 
         await FilterQuantities();
-        StateHasChanged();
-    }
-
-    private async Task<ConversionResult> ConvertValueAsync(string quantity, double value, string fromUnit, string toUnit)
-    {
-        return await ConversionService.ConvertAsync(quantity, value, fromUnit, toUnit);
     }
 }
+

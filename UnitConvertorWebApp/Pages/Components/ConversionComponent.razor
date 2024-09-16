@@ -2,6 +2,7 @@
 @using UnitConvertorWebApp.Services
 @using UnitConvertorWebApp.Pages.Components
 @inject IFavoritesService FavoritesService
+@inject IConversionService ConversionService
 
 <MudCard Class="mx-4" Elevation="1" Style="border-radius: 24px">
     <MudCardContent>
@@ -11,7 +12,7 @@
         </div>
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect T="string" Value="selectedFromUnit" ValueChanged="OnFromUnitChanged" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+                <MudSelect T="string" @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
                     @foreach (var unit in Units)
                     {
                         <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -22,7 +23,7 @@
                 <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" AdornmentColor="Color.Primary" />
             </MudItem>
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect T="string" Value="selectedToUnit" ValueChanged="OnToUnitChanged" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+                <MudSelect T="string" @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
                     @foreach (var unit in filteredToUnits)
                     {
                         <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -42,10 +43,11 @@
 
 @code {
     [Parameter] public List<string> Units { get; set; } = new();
-    [Parameter] public Func<double, string, string, Task<ConversionResult>> Convert { get; set; } = default!;
     [Parameter] public string DefaultFromUnit { get; set; } = string.Empty;
     [Parameter] public string DefaultToUnit { get; set; } = string.Empty;
     [Parameter] public string TitleOfCard { get; set; } = string.Empty;
+    [Parameter] public bool IsFavorite { get; set; }
+    [Parameter] public EventCallback OnToggleFavorite { get; set; }
 
     private string selectedFromUnit = string.Empty;
     private string selectedToUnit = string.Empty;
@@ -60,21 +62,7 @@
         FilterToUnits();
     }
 
-    private void OnFromUnitChanged(string newUnit)
-    {
-        selectedFromUnit = newUnit;
-        FilterToUnits();
-    }
-
-    private void OnToUnitChanged(string newUnit)
-    {
-        selectedToUnit = newUnit;
-    }
-
-    private void FilterToUnits()
-    {
-        filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
-    }
+    private void FilterToUnits() => filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
 
     private async Task ConvertUnitsAsync()
     {
@@ -83,7 +71,7 @@
 
         try
         {
-            var result = await Convert(inputValue, selectedFromUnit, selectedToUnit);
+            var result = await ConversionService.ConvertAsync(TitleOfCard, inputValue, selectedFromUnit, selectedToUnit);
             resultText = $"{result.NumericValue:F2} {result.Abbreviation}";
         }
         catch (Exception ex)
@@ -92,18 +80,5 @@
         }
     }
 
-    #region Favorites
-
-    [Parameter] public bool IsFavorite { get; set; }
-    [Parameter] public EventCallback OnToggleFavorite { get; set; } // This handles the event from parent
-
-    private async Task ToggleFavorite()
-    {
-        if (OnToggleFavorite.HasDelegate)
-        {
-            await OnToggleFavorite.InvokeAsync(); // Invokes the parent method to toggle favorite
-        }
-    }
-
-    #endregion
+    private Task ToggleFavorite() => OnToggleFavorite.InvokeAsync();
 }

@@ -2,105 +2,48 @@
 @using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Pages.Components
 @using UnitConvertorWebApp.Services
+@using UnitConvertorWebApp.ViewModels
 @using UnitsNet
 @inject IConversionService ConversionService
 @inject IFavoritesService FavoritesService
 
-<MudTextField Class="mb-4" @bind-Value="searchText" Label="Search Quantities" Variant="Variant.Filled"
-              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
-              Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="FilterQuantities" />
 
-@if (filteredQuantities != null)
+<MudTextField Class="mb-4" @bind-Value="@ViewModel.SearchText" Label="Search Quantities" Variant="Variant.Filled"
+              Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
+              Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="@ViewModel.FilterQuantities" />
+
+@if (ViewModel.FilteredQuantities != null)
 {
     <MudItem Class="mb-2">
-        <Virtualize Items="filteredQuantities" Context="quantity">
-            @if (quantityData.TryGetValue(quantity, out var data))
-            {
-                <ConversionComponent TitleOfCard="@quantity"
-                                     Units="@data.Units"
-                                     DefaultFromUnit="@data.DefaultFromUnit"
-                                     DefaultToUnit="@data.DefaultToUnit"
-                                     IsFavorite="@favorites.Contains(quantity)"
-                                     OnToggleFavorite="@(() => ToggleFavoriteAsync(quantity))" />
-            }
-            else
-            {
-                <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-            }
+        <Virtualize Items="ViewModel.FilteredQuantities" Context="quantity">
+            <ConversionComponent TitleOfCard="@quantity"
+                                 Units="@ViewModel.AvailableUnits.ToList()"
+                                 SelectedFromUnit="@ViewModel.SelectedFromUnit"
+                                 SelectedToUnit="@ViewModel.SelectedToUnit"
+                                 IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)"
+                                 InputValue="@ViewModel.InputValue"
+                                 ResultText="@ViewModel.ResultText"
+                                 OnToggleFavorite="@(() => ViewModel.ToggleFavoriteAsync(quantity))"
+                                 OnFromUnitChanged="@((string value) => ViewModel.SelectedFromUnit = value)"
+                                 OnToUnitChanged="@((string value) => ViewModel.SelectedToUnit = value)"
+                                 OnConvert="@ViewModel.ConvertUnitsAsync" />
         </Virtualize>
     </MudItem>
 }
 
 @code {
-    private List<string> quantities = new();
-    private List<string> filteredQuantities = new();
-    private HashSet<string> favorites = new(StringComparer.OrdinalIgnoreCase);
-    private string searchText = string.Empty;
-    private Dictionary<string, QuantityData> quantityData = new();
-
-    private class QuantityData
-    {
-        public List<string> Units { get; set; } = new();
-        public string DefaultFromUnit { get; set; } = string.Empty;
-        public string DefaultToUnit { get; set; } = string.Empty;
-    }
+    private ConversionViewModel ViewModel { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadFavoritesAsync();
-        await LoadQuantitiesAsync();
+        ViewModel = new ConversionViewModel(ConversionService, FavoritesService);
+        ViewModel.StateChanged += StateHasChanged;
+        await ViewModel.InitializeAsync();
     }
 
-    private async Task LoadQuantitiesAsync()
+    public void Dispose()
     {
-        quantities = await ConversionService.GetAvailableQuantitiesAsync();
-        await FilterQuantities();
-    }
-
-    private async Task LoadFavoritesAsync() => favorites = new HashSet<string>(await FavoritesService.GetFavoritesAsync(), StringComparer.OrdinalIgnoreCase);
-
-    private async Task LoadQuantityDataAsync(IEnumerable<string> quantitiesToLoad)
-    {
-        foreach (var quantity in quantitiesToLoad.Where(q => !quantityData.ContainsKey(q)))
-        {
-            var units = await ConversionService.GetAvailableUnitsAsync(quantity);
-            quantityData[quantity] = new QuantityData
-                {
-                    Units = units,
-                    DefaultFromUnit = units.FirstOrDefault() ?? string.Empty,
-                    DefaultToUnit = units.Skip(1).FirstOrDefault() ?? string.Empty
-                };
-        }
-    }
-
-    private async Task FilterQuantities()
-    {
-        IEnumerable<string> filtered = string.IsNullOrWhiteSpace(searchText)
-            ? quantities
-            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase));
-
-        filteredQuantities = favorites.Intersect(filtered)
-            .Concat(filtered.Except(favorites))
-            .ToList();
-
-        await LoadQuantityDataAsync(filteredQuantities);
-        StateHasChanged();
-    }
-
-    private async Task ToggleFavoriteAsync(string quantity)
-    {
-        if (favorites.Contains(quantity))
-        {
-            await FavoritesService.RemoveFavoriteAsync(quantity);
-            favorites.Remove(quantity);
-        }
-        else
-        {
-            await FavoritesService.AddFavoriteAsync(quantity);
-            favorites.Add(quantity);
-        }
-
-        await FilterQuantities();
+        ViewModel.StateChanged -= StateHasChanged;
+        ViewModel.Dispose();
     }
 }
-

@@ -7,6 +7,7 @@ using UnitConvertorWebApp.Services.Implementations;
 using MudBlazor.Extensions;
 using MudExtensions.Services;
 using Blazored.LocalStorage;
+using UnitConvertorWebApp.ViewModels;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -23,6 +24,7 @@ builder.Services.AddBlazoredLocalStorage();
 
 builder.Services.AddScoped<IConversionService, ConversionService>();
 builder.Services.AddScoped<IFavoritesService, FavoritesService>();
+builder.Services.AddScoped<ConversionViewModel>();
 
 #endregion
 

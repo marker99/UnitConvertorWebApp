@@ -1,18 +1,17 @@
 ﻿@using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Services
 @using UnitConvertorWebApp.Pages.Components
-@inject IFavoritesService FavoritesService
-@inject IConversionService ConversionService
+@using UnitConvertorWebApp.ViewModels
 
 <MudCard Class="mx-4" Elevation="1" Style="border-radius: 24px">
     <MudCardContent>
         <div class="d-flex justify-space-between align-center mb-4">
             <MudText Typo="Typo.h5">@TitleOfCard</MudText>
-            <FavoriteButton IsFavorite="IsFavorite" OnToggleFavorite="ToggleFavorite" />
+            <FavoriteButton IsFavorite="@IsFavorite" OnToggleFavorite="@OnToggleFavorite" />
         </div>
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect T="string" @bind-Value="selectedFromUnit" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+                <MudSelect T="string" Value="@SelectedFromUnit" ValueChanged="@HandleFromUnitChanged" Label="From Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
                     @foreach (var unit in Units)
                     {
                         <MudSelectItem Value="@unit">@unit</MudSelectItem>
@@ -20,21 +19,21 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="3" md="3">
-                <MudTextField @bind-Value="inputValue" Label="Enter Value" Variant="Variant.Outlined" AdornmentColor="Color.Primary" />
+                <MudTextField @bind-Value="InputValue" Label="Enter Value" Variant="Variant.Outlined" AdornmentColor="Color.Primary" />
             </MudItem>
             <MudItem xs="12" sm="3" md="3">
-                <MudSelect T="string" @bind-Value="selectedToUnit" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
-                    @foreach (var unit in filteredToUnits)
+                <MudSelect T="string" Value="@SelectedToUnit" ValueChanged="@HandleToUnitChanged" Label="To Unit" Variant="Variant.Outlined" AdornmentColor="Color.Primary">
+                    @foreach (var unit in Units.Where(u => u != SelectedFromUnit))
                     {
                         <MudSelectItem Value="@unit">@unit</MudSelectItem>
                     }
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
-                <MudButton OnClick="ConvertUnitsAsync" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Calculate">Convert</MudButton>
+                <MudButton OnClick="OnConvert" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Calculate">Convert</MudButton>
             </MudItem>
             <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
-                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultText" />
+                <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@ResultText" />
             </MudItem>
         </MudGrid>
     </MudCardContent>
@@ -42,43 +41,25 @@
 <MudDivider Class="my-6" Style="height: 4px; background-color: #ab542e; border-radius:8px" />
 
 @code {
-    [Parameter] public List<string> Units { get; set; } = new();
-    [Parameter] public string DefaultFromUnit { get; set; } = string.Empty;
-    [Parameter] public string DefaultToUnit { get; set; } = string.Empty;
-    [Parameter] public string TitleOfCard { get; set; } = string.Empty;
+    [Parameter] public string TitleOfCard { get; set; }
+    [Parameter] public List<string> Units { get; set; }
+    [Parameter] public string SelectedFromUnit { get; set; }
+    [Parameter] public string SelectedToUnit { get; set; }
     [Parameter] public bool IsFavorite { get; set; }
+    [Parameter] public double InputValue { get; set; }
+    [Parameter] public string ResultText { get; set; }
     [Parameter] public EventCallback OnToggleFavorite { get; set; }
+    [Parameter] public EventCallback<string> OnFromUnitChanged { get; set; }
+    [Parameter] public EventCallback<string> OnToUnitChanged { get; set; }
+    [Parameter] public EventCallback OnConvert { get; set; }
 
-    private string selectedFromUnit = string.Empty;
-    private string selectedToUnit = string.Empty;
-    private double inputValue;
-    private string resultText = string.Empty;
-    private List<string> filteredToUnits = new();
-
-    protected override void OnInitialized()
+    private Task HandleFromUnitChanged(string value)
     {
-        selectedFromUnit = DefaultFromUnit;
-        selectedToUnit = DefaultToUnit;
-        FilterToUnits();
+        return OnFromUnitChanged.InvokeAsync(value);
     }
 
-    private void FilterToUnits() => filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
-
-    private async Task ConvertUnitsAsync()
+    private Task HandleToUnitChanged(string value)
     {
-        if (string.IsNullOrEmpty(selectedFromUnit) || string.IsNullOrEmpty(selectedToUnit))
-            return;
-
-        try
-        {
-            var result = await ConversionService.ConvertAsync(TitleOfCard, inputValue, selectedFromUnit, selectedToUnit);
-            resultText = $"{result.NumericValue:F2} {result.Abbreviation}";
-        }
-        catch (Exception ex)
-        {
-            resultText = $"Error: {ex.Message}";
-        }
+        return OnToUnitChanged.InvokeAsync(value);
     }
-
-    private Task ToggleFavorite() => OnToggleFavorite.InvokeAsync();
 }

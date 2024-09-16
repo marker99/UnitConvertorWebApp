@@ -2,29 +2,30 @@
 @using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Services
 @using UnitConvertorWebApp.Pages.Components
+@using UnitConvertorWebApp.ViewModels
 @using UnitsNet
 @inject IConversionService ConversionService
 @inject IFavoritesService FavoritesService
 
+
 <MudGrid>
-    @* Left Side *@
     <MudItem xs="12" sm="4">
         <MudCard Class="full-height">
             <MudCardHeader Class="mud-theme-primary">
                 <MudText Typo="Typo.h6">Quantity</MudText>
             </MudCardHeader>
 
-            <MudTextField @bind-Value="searchText" Label="Search Quantities" Variant="Variant.Filled" Clearable="true"
+            <MudTextField @bind-Value="@ViewModel.SearchText" Label="Search Quantities" Variant="Variant.Filled" Clearable="true"
                           AdornmentColor="Color.Primary" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-                          OnDebounceIntervalElapsed="FilterQuantities" DebounceInterval="300" />
+                          OnDebounceIntervalElapsed="@ViewModel.FilterQuantities" DebounceInterval="300" />
 
             <MudList Dense="true" T="string" Color="Color.Primary">
-                @foreach (var quantity in filteredQuantities)
+                @foreach (var quantity in ViewModel.FilteredQuantities)
                 {
-                    <MudListItem @onclick="(() => SelectQuantityAsync(quantity))" Selected="@(selectedQuantity == quantity)" Class="@(selectedQuantity == quantity ? "selected-item" : "")">
+                    <MudListItem @onclick="(() => ViewModel.SelectQuantityAsync(quantity))" Selected="@(ViewModel.SelectedQuantity == quantity)" Class="@(ViewModel.SelectedQuantity == quantity ? "selected-item" : "")">
                         <div class="d-flex justify-space-between align-center w-100">
                             <MudText>@quantity</MudText>
-                            <FavoriteButton IsFavorite="favoritesMap.GetValueOrDefault(quantity)" OnToggleFavorite="() => ToggleFavoriteAsync(quantity)" />
+                            <FavoriteButton IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)" OnToggleFavorite="() => ViewModel.ToggleFavoriteAsync(quantity)" />
                         </div>
                     </MudListItem>
                 }
@@ -32,58 +33,52 @@
         </MudCard>
     </MudItem>
 
-    @* Right Side *@
     <MudItem xs="12" sm="8">
-        @if (selectedQuantity != null)
+        @if (ViewModel.SelectedQuantity != null)
         {
             <MudGrid Spacing="4">
-                @* From List *@
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
                             <MudText Typo="Typo.h6">From</MudText>
                         </MudCardHeader>
                         <MudList Dense="true" T="string" Color="Color.Primary">
-                            @foreach (var unit in availableUnits)
+                            @foreach (var unit in ViewModel.AvailableUnits)
                             {
-                                <MudListItem @onclick="(() => selectedFromUnit = unit)" Selected="@(selectedFromUnit == unit)" Class="@(selectedFromUnit == unit ? "selected-item" : "")">
+                                <MudListItem @onclick="(() => ViewModel.SelectedFromUnit = unit)" Selected="@(ViewModel.SelectedFromUnit == unit)" Class="@(ViewModel.SelectedFromUnit == unit ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
                         </MudList>
                     </MudCard>
                 </MudItem>
-                @* To List *@
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
                             <MudText Typo="Typo.h6">To</MudText>
                         </MudCardHeader>
                         <MudList Dense="true" T="string" Color="Color.Primary">
-                            @foreach (var unit in availableUnits)
+                            @foreach (var unit in ViewModel.AvailableUnits)
                             {
-                                <MudListItem @onclick="(() => selectedToUnit = unit)" Selected="@(selectedToUnit == unit)" Class="@(selectedToUnit == unit ? "selected-item" : "")">
+                                <MudListItem @onclick="(() => ViewModel.SelectedToUnit = unit)" Selected="@(ViewModel.SelectedToUnit == unit)" Class="@(ViewModel.SelectedToUnit == unit ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
                         </MudList>
                     </MudCard>
                 </MudItem>
-                @* Input Field *@
                 <MudItem xs="6">
                     <MudCard>
-                        <MudTextField @bind-Value="inputValue" Label="Value" Variant="Variant.Filled" />
+                        <MudTextField @bind-Value="ViewModel.InputValue" Label="Value" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
-                @* Result Field *@
                 <MudItem xs="6">
                     <MudCard>
-                        <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled" />
+                        <MudTextField ReadOnly="true" Value="@ViewModel.ResultText" Label="Result" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
-                @* Convert Button *@
                 <MudItem xs="12" Class="d-flex justify-center">
-                    <MudButton OnClick="ConvertUnitsAsync" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
+                    <MudButton OnClick="ViewModel.ConvertUnitsAsync" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
                 </MudItem>
             </MudGrid>
         }
@@ -91,91 +86,18 @@
 </MudGrid>
 
 @code {
-    private List<string> quantities = new();
-    private List<string> filteredQuantities = new();
-    private List<string> availableUnits = new();
-    private string selectedQuantity;
-    private string selectedFromUnit;
-    private string selectedToUnit;
-    private double inputValue;
-    private string resultText = string.Empty;
-    private string searchText = string.Empty;
-    private Dictionary<string, bool> favoritesMap = new();
+    private ConversionViewModel ViewModel { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        quantities = await ConversionService.GetAvailableQuantitiesAsync();
-        var favorites = await FavoritesService.GetFavoritesAsync();
-        favoritesMap = quantities.ToDictionary(q => q, q => favorites.Contains(q, StringComparer.OrdinalIgnoreCase));
-        await FilterQuantities();
-        if (filteredQuantities.Any())
-        {
-            await SelectQuantityAsync(filteredQuantities.First());
-        }
+        ViewModel = new ConversionViewModel(ConversionService, FavoritesService);
+        ViewModel.StateChanged += StateHasChanged;
+        await ViewModel.InitializeAsync();
     }
 
-    private async Task ToggleFavoriteAsync(string quantity)
+    public void Dispose()
     {
-        favoritesMap[quantity] = !favoritesMap[quantity];
-        if (favoritesMap[quantity])
-        {
-            await FavoritesService.AddFavoriteAsync(quantity);
-        }
-        else
-        {
-            await FavoritesService.RemoveFavoriteAsync(quantity);
-        }
-        await FilterQuantities();
-    }
-
-    private async Task FilterQuantities()
-    {
-        filteredQuantities = string.IsNullOrWhiteSpace(searchText)
-            ? new List<string>(quantities)
-            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
-
-        filteredQuantities = favoritesMap
-            .Where(kvp => kvp.Value && filteredQuantities.Contains(kvp.Key))
-            .Select(kvp => kvp.Key)
-            .Concat(filteredQuantities.Where(q => !favoritesMap.GetValueOrDefault(q)))
-            .ToList();
-
-        if (!filteredQuantities.Contains(selectedQuantity))
-        {
-            await SelectQuantityAsync(filteredQuantities.FirstOrDefault());
-        }
-
-        StateHasChanged();
-    }
-
-    private async Task SelectQuantityAsync(string quantity)
-    {
-        if (quantity == null) return;
-
-        selectedQuantity = quantity;
-        availableUnits = await ConversionService.GetAvailableUnitsAsync(quantity);
-
-        selectedFromUnit = availableUnits.FirstOrDefault();
-        selectedToUnit = availableUnits.Skip(1).FirstOrDefault();
-
-        // Reset input and result
-        inputValue = 0;
-        resultText = string.Empty;
-    }
-
-    private async Task ConvertUnitsAsync()
-    {
-        if (!string.IsNullOrEmpty(selectedQuantity) && !string.IsNullOrEmpty(selectedFromUnit) && !string.IsNullOrEmpty(selectedToUnit))
-        {
-            try
-            {
-                var result = await ConversionService.ConvertAsync(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
-                resultText = $"{result.NumericValue:F2} {result.Abbreviation}";
-            }
-            catch (Exception ex)
-            {
-                resultText = $"Error: {ex.Message}";
-            }
-        }
+        ViewModel.StateChanged -= StateHasChanged;
+        ViewModel.Dispose();
     }
 }

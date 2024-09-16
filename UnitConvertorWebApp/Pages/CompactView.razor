@@ -1,31 +1,32 @@
-﻿@using UnitConvertorWebApp.Models
+﻿@page "/compact"
+@using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Services
 @using UnitsNet
 @inject IConversionService ConversionService
 
-@page "/compact"
-
 <MudGrid>
-    <!-- Left side with search functionality -->
     <MudItem xs="12" sm="4">
         <MudCard Class="full-height">
             <MudCardHeader Class="mud-theme-primary">
                 <MudText Typo="Typo.h6">Quantity</MudText>
             </MudCardHeader>
 
-            <MudTextField Value="@searchText"
+            <MudTextField @bind-Value="searchText"
                           Label="Search Quantities"
-                          Variant="Variant.Filled" Clearable="true" AdornmentColor="Color.Primary"
+                          Variant="Variant.Filled"
+                          Clearable="true"
+                          AdornmentColor="Color.Primary"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search"
-                          TextChanged="OnSearchTextChanged" Immediate="true" />
+                          OnDebounceIntervalElapsed="FilterQuantities"
+                          DebounceInterval="300" />
 
             <MudList Dense="true" T="string" Color="Color.Primary">
                 @foreach (var quantity in filteredQuantities)
                 {
-                    <MudListItem @onclick="(() => SelectQuantity(quantity))"
-                                 Selected="@isSelected(quantity)"
-                                 Class="@(isSelected(quantity) ? "selected-item" : "")">
+                    <MudListItem @onclick="(() => SelectQuantityAsync(quantity))"
+                                 Selected="@(selectedQuantity == quantity)"
+                                 Class="@(selectedQuantity == quantity ? "selected-item" : "")">
                         @quantity
                     </MudListItem>
                 }
@@ -33,12 +34,10 @@
         </MudCard>
     </MudItem>
 
-    <!-- Right side -->
     <MudItem xs="12" sm="8">
         @if (selectedQuantity != null)
         {
             <MudGrid Spacing="4">
-                <!-- From list -->
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
@@ -47,9 +46,9 @@
                         <MudList Dense="true" T="string" Color="Color.Primary">
                             @foreach (var unit in fromUnits)
                             {
-                                <MudListItem @onclick="(() => SelectFromUnit(unit))"
-                                             Selected="@isFromUnitSelected(unit)"
-                                             Class="@(isFromUnitSelected(unit) ? "selected-item" : "")">
+                                <MudListItem @onclick="(() => selectedFromUnit = unit)"
+                                             Selected="@(selectedFromUnit == unit)"
+                                             Class="@(selectedFromUnit == unit ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
@@ -57,7 +56,6 @@
                     </MudCard>
                 </MudItem>
 
-                <!-- To list -->
                 <MudItem xs="6">
                     <MudCard Class="unit-card">
                         <MudCardHeader Class="mud-theme-primary">
@@ -66,9 +64,9 @@
                         <MudList Dense="true" T="string" Color="Color.Primary">
                             @foreach (var unit in toUnits)
                             {
-                                <MudListItem @onclick="(() => SelectToUnit(unit))"
-                                             Selected="@isToUnitSelected(unit)"
-                                             Class="@(isToUnitSelected(unit) ? "selected-item" : "")">
+                                <MudListItem @onclick="(() => selectedToUnit = unit)"
+                                             Selected="@(selectedToUnit == unit)"
+                                             Class="@(selectedToUnit == unit ? "selected-item" : "")">
                                     @unit
                                 </MudListItem>
                             }
@@ -76,23 +74,20 @@
                     </MudCard>
                 </MudItem>
 
-                <!-- Value input -->
                 <MudItem xs="6">
                     <MudCard>
                         <MudTextField @bind-Value="inputValue" Label="Value" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
 
-                <!-- Result -->
                 <MudItem xs="6">
                     <MudCard>
-                        <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled"/>
+                        <MudTextField ReadOnly="true" Value="@resultText" Label="Result" Variant="Variant.Filled" />
                     </MudCard>
                 </MudItem>
 
-                <!-- Convert button -->
                 <MudItem xs="12" Class="d-flex justify-center">
-                    <MudButton OnClick="ConvertUnits" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
+                    <MudButton OnClick="ConvertUnitsAsync" Color="Color.Primary" Variant="Variant.Filled">Convert</MudButton>
                 </MudItem>
             </MudGrid>
         }
@@ -100,7 +95,7 @@
 </MudGrid>
 
 @code {
-    private List<string> quantities;
+    private List<string> quantities = new();
     private List<string> filteredQuantities = new();
     private List<string> fromUnits = new();
     private List<string> toUnits = new();
@@ -111,78 +106,41 @@
     private string resultText = string.Empty;
     private string searchText = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Initialize all quantities
-        quantities = Quantity.Names.ToList();
-        filteredQuantities = new List<string>(quantities);  // Initialize filtered list
+        quantities = await ConversionService.GetAvailableQuantitiesAsync();
+        filteredQuantities = new List<string>(quantities);
 
-        // Select the first quantity by default
         if (quantities.Any())
         {
-            SelectQuantity(quantities.FirstOrDefault());
+            await SelectQuantityAsync(quantities.First());
         }
     }
 
-    // Filter the quantities based on the search input
-    private void OnSearchTextChanged(string newText)
+    private async Task FilterQuantities()
     {
-        searchText = newText;
+        filteredQuantities = string.IsNullOrWhiteSpace(searchText)
+            ? new List<string>(quantities)
+            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
 
-        if (string.IsNullOrWhiteSpace(searchText))
-        {
-            filteredQuantities = new List<string>(quantities);
-        }
-        else
-        {
-            filteredQuantities = quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
+        StateHasChanged();
     }
 
-    private void SelectQuantity(string quantity)
+    private async Task SelectQuantityAsync(string quantity)
     {
         selectedQuantity = quantity;
-        var quantityInfo = Quantity.ByName[quantity];
-
-        // Populate unit lists based on selected quantity
-        fromUnits = quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
+        fromUnits = await ConversionService.GetAvailableUnitsAsync(quantity);
         toUnits = new List<string>(fromUnits);
 
-        // Set default selections for units
         selectedFromUnit = fromUnits.FirstOrDefault();
         selectedToUnit = toUnits.Skip(1).FirstOrDefault();
     }
 
-    private bool isSelected(string quantity)
-    {
-        return selectedQuantity == quantity;
-    }
-
-    private void SelectFromUnit(string unit)
-    {
-        selectedFromUnit = unit;
-    }
-
-    private bool isFromUnitSelected(string unit)
-    {
-        return selectedFromUnit == unit;
-    }
-
-    private void SelectToUnit(string unit)
-    {
-        selectedToUnit = unit;
-    }
-
-    private bool isToUnitSelected(string unit)
-    {
-        return selectedToUnit == unit;
-    }
-
-    private void ConvertUnits()
+    private async Task ConvertUnitsAsync()
     {
         if (!string.IsNullOrEmpty(selectedQuantity) && !string.IsNullOrEmpty(selectedFromUnit) && !string.IsNullOrEmpty(selectedToUnit))
         {
-            var result = ConversionService.Convert(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
+            var result = await ConversionService.ConvertAsync(selectedQuantity, inputValue, selectedFromUnit, selectedToUnit);
             resultText = $"{result.NumericValue} {result.Abbreviation}";
         }
     }

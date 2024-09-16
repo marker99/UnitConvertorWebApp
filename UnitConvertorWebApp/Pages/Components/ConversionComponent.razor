@@ -25,7 +25,7 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="12" sm="3" md="2" Class="d-flex justify-center align-center">
-                <MudButton OnClick="ConvertUnits" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Calculate">Convert</MudButton>
+                <MudButton OnClick="ConvertUnitsAsync" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Calculate">Convert</MudButton>
             </MudItem>
             <MudItem xs="12" sm="4" md="3" Class="d-flex justify-center">
                 <MudTextField Label="Result" Variant="Variant.Outlined" ReadOnly="true" Value="@resultText" />
@@ -37,13 +37,13 @@
 
 @code {
     [Parameter] public List<string> Units { get; set; } = new();
-    [Parameter] public Func<double, string, string, ConversionResult> Convert { get; set; } = default!;
+    [Parameter] public Func<double, string, string, Task<ConversionResult>> Convert { get; set; } = default!;
     [Parameter] public string DefaultFromUnit { get; set; } = string.Empty;
     [Parameter] public string DefaultToUnit { get; set; } = string.Empty;
     [Parameter] public string TitleOfCard { get; set; } = string.Empty;
 
-    private string selectedFromUnit;
-    private string selectedToUnit;
+    private string selectedFromUnit = string.Empty;
+    private string selectedToUnit = string.Empty;
     private double inputValue;
     private string resultText = string.Empty;
     private List<string> filteredToUnits = new();
@@ -59,13 +59,11 @@
     {
         selectedFromUnit = newUnit;
         FilterToUnits();
-        StateHasChanged();
     }
 
     private void OnToUnitChanged(string newUnit)
     {
         selectedToUnit = newUnit;
-        StateHasChanged();
     }
 
     private void FilterToUnits()
@@ -73,12 +71,19 @@
         filteredToUnits = Units.Where(u => u != selectedFromUnit).ToList();
     }
 
-    private void ConvertUnits()
+    private async Task ConvertUnitsAsync()
     {
         if (string.IsNullOrEmpty(selectedFromUnit) || string.IsNullOrEmpty(selectedToUnit))
             return;
 
-        var result = Convert(inputValue, selectedFromUnit, selectedToUnit);
-        resultText = $"{result.NumericValue} {result.Abbreviation}";
+        try
+        {
+            var result = await Convert(inputValue, selectedFromUnit, selectedToUnit);
+            resultText = $"{result.NumericValue:F2} {result.Abbreviation}";
+        }
+        catch (Exception ex)
+        {
+            resultText = $"Error: {ex.Message}";
+        }
     }
 }

@@ -1,24 +1,31 @@
-﻿@using UnitConvertorWebApp.Models
+﻿@page "/list"
+@using UnitConvertorWebApp.Models
 @using UnitConvertorWebApp.Pages.Components
 @using UnitConvertorWebApp.Services
 @using UnitsNet
-@inject IConversionService DynamicConversionService
-@page "/dynamic"
+@inject IConversionService ConversionService
 
 <MudTextField Class="mb-4" @bind-Value="searchText" Label="Search Quantities" Variant="Variant.Filled"
               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
-              Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="@FilterQuantities" />
+              Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="FilterQuantities" />
 
 @if (filteredQuantities != null)
 {
     <MudItem Class="mb-2">
         <Virtualize Items="filteredQuantities" Context="quantity">
-            <ConversionComponent TitleOfCard="@quantity"
-                                 Units="@GetUnitsForQuantity(quantity)"
-                                 DefaultFromUnit="@GetDefaultFromUnit(quantity)"
-                                 DefaultToUnit="@GetDefaultToUnit(quantity)"
-                                 Convert="(value, fromUnit, toUnit) => ConvertValue(quantity, value, fromUnit, toUnit)" />
-
+            @if (quantityData.ContainsKey(quantity))
+            {
+                var data = quantityData[quantity];
+                <ConversionComponent TitleOfCard="@quantity"
+                                     Units="@data.Units"
+                                     DefaultFromUnit="@data.DefaultFromUnit"
+                                     DefaultToUnit="@data.DefaultToUnit"
+                                     Convert="@((value, fromUnit, toUnit) => ConvertValueAsync(quantity, value, fromUnit, toUnit))" />
+            }
+            else
+            {
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+            }
         </Virtualize>
     </MudItem>
 }
@@ -27,7 +34,14 @@
     private List<string> quantities;
     private List<string> filteredQuantities;
     private string searchText = string.Empty;
-    private Dictionary<string, List<string>> quantityUnitsCache = new Dictionary<string, List<string>>();
+    private Dictionary<string, QuantityData> quantityData = new Dictionary<string, QuantityData>();
+
+    private class QuantityData
+    {
+        public List<string> Units { get; set; }
+        public string DefaultFromUnit { get; set; }
+        public string DefaultToUnit { get; set; }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -36,49 +50,40 @@
 
     private async Task LoadQuantitiesAsync()
     {
-        await Task.Run(() =>
-        {
-            quantities = Quantity.Names.ToList();
-            filteredQuantities = new List<string>(quantities); // Initially load only 20 items
-        });
+        quantities = await ConversionService.GetAvailableQuantitiesAsync();
+        filteredQuantities = new List<string>(quantities);
+        await LoadQuantityDataAsync(filteredQuantities);
     }
 
-    private List<string> GetUnitsForQuantity(string quantity)
+    private async Task LoadQuantityDataAsync(IEnumerable<string> quantitiesToLoad)
     {
-        if (!quantityUnitsCache.TryGetValue(quantity, out var units))
+        foreach (var quantity in quantitiesToLoad)
         {
-            var quantityInfo = Quantity.ByName[quantity];
-            units = quantityInfo.UnitInfos.Select(ui => ui.Name).ToList();
-            quantityUnitsCache[quantity] = units;
+            if (!quantityData.ContainsKey(quantity))
+            {
+                var units = await ConversionService.GetAvailableUnitsAsync(quantity);
+                quantityData[quantity] = new QuantityData
+                    {
+                        Units = units,
+                        DefaultFromUnit = units.FirstOrDefault() ?? string.Empty,
+                        DefaultToUnit = units.Skip(1).FirstOrDefault() ?? string.Empty
+                    };
+            }
         }
-        return units;
-    }
-
-    private string GetDefaultFromUnit(string quantity)
-    {
-        var units = GetUnitsForQuantity(quantity);
-        return units.FirstOrDefault() ?? string.Empty;
-    }
-
-    private string GetDefaultToUnit(string quantity)
-    {
-        var units = GetUnitsForQuantity(quantity);
-        return units.Skip(1).FirstOrDefault() ?? string.Empty;
-    }
-
-    private ConversionResult ConvertValue(string quantity, double value, string fromUnit, string toUnit)
-    {
-        return DynamicConversionService.Convert(quantity, value, fromUnit, toUnit);
     }
 
     private async Task FilterQuantities()
     {
-        await Task.Run(() =>
-        {
-            filteredQuantities = string.IsNullOrWhiteSpace(searchText)
-                ? new List<string>(quantities.Take(20))
-                : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(20).ToList();
-        });
+        filteredQuantities = string.IsNullOrWhiteSpace(searchText)
+            ? new List<string>(quantities.Take(20))
+            : quantities.Where(q => q.Contains(searchText, StringComparison.OrdinalIgnoreCase)).Take(20).ToList();
+
+        await LoadQuantityDataAsync(filteredQuantities);
         StateHasChanged();
+    }
+
+    private async Task<ConversionResult> ConvertValueAsync(string quantity, double value, string fromUnit, string toUnit)
+    {
+        return await ConversionService.ConvertAsync(quantity, value, fromUnit, toUnit);
     }
 }

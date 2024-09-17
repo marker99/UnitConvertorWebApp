@@ -9,7 +9,6 @@ namespace UnitConvertorWebApp.ViewModels
     {
         private readonly IConversionService _conversionService;
         private readonly IFavoritesService _favoritesService;
-        //private readonly NavigationManager _navigationManager;
 
         public ObservableCollection<string> Quantities { get; private set; } = new();
         public ObservableCollection<string> FilteredQuantities { get; private set; } = new();
@@ -52,13 +51,10 @@ namespace UnitConvertorWebApp.ViewModels
                 ? new List<string>(Quantities)
                 : Quantities.Where(q => q.Contains(SearchText, StringComparison.OrdinalIgnoreCase)).ToList();
 
-            var orderedFiltered = FavoritesMap
-                .Where(kvp => kvp.Value && filtered.Contains(kvp.Key))
-                .Select(kvp => kvp.Key)
-                .Concat(filtered.Where(q => !FavoritesMap.GetValueOrDefault(q)))
-                .ToList();
+            var favoriteItems = filtered.Where(q => FavoritesMap[q]).OrderBy(q => q).ToList();
+            var nonFavoriteItems = filtered.Where(q => !FavoritesMap[q]).OrderBy(q => q).ToList();
 
-            FilteredQuantities = new ObservableCollection<string>(orderedFiltered);
+            FilteredQuantities = new ObservableCollection<string>(favoriteItems.Concat(nonFavoriteItems));
 
             if (!FilteredQuantities.Contains(SelectedQuantity))
             {
@@ -85,10 +81,10 @@ namespace UnitConvertorWebApp.ViewModels
             NotifyStateChanged();
         }
 
-        public async Task ToggleFavoriteAsync(string quantity)
+        public async Task ToggleFavoriteAsync(string quantity, bool newState)
         {
-            FavoritesMap[quantity] = !FavoritesMap[quantity];
-            if (FavoritesMap[quantity])
+            FavoritesMap[quantity] = newState;
+            if (newState)
             {
                 await _favoritesService.AddFavoriteAsync(quantity);
             }

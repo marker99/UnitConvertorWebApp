@@ -25,7 +25,7 @@
                     <MudListItem @onclick="(() => ViewModel.SelectQuantityAsync(quantity))" Selected="@(ViewModel.SelectedQuantity == quantity)" Class="@(ViewModel.SelectedQuantity == quantity ? "selected-item" : "")">
                         <div class="d-flex justify-space-between align-center w-100">
                             <MudText>@quantity</MudText>
-                            <FavoriteButton IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)" OnToggleFavorite="() => ViewModel.ToggleFavoriteAsync(quantity)" />
+                            <FavoriteButton IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)" OnToggleFavorite="@((newState) => ViewModel.ToggleFavoriteAsync(quantity, newState))" />
                         </div>
                     </MudListItem>
                 }

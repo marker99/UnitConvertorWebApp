@@ -7,7 +7,6 @@
 @inject IConversionService ConversionService
 @inject IFavoritesService FavoritesService
 
-
 <MudTextField Class="mb-4" @bind-Value="@ViewModel.SearchText" Label="Search Quantities" Variant="Variant.Filled"
               Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"
               Clearable="true" DebounceInterval="300" OnDebounceIntervalElapsed="@ViewModel.FilterQuantities" />
@@ -20,10 +19,10 @@
                                  Units="@ViewModel.AvailableUnits.ToList()"
                                  SelectedFromUnit="@ViewModel.SelectedFromUnit"
                                  SelectedToUnit="@ViewModel.SelectedToUnit"
-                                 IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)"
+                                 IsFavorite="@ViewModel.FavoritesMap[quantity]"
                                  InputValue="@ViewModel.InputValue"
                                  ResultText="@ViewModel.ResultText"
-                                 OnToggleFavorite="@(() => ViewModel.ToggleFavoriteAsync(quantity))"
+                                 OnToggleFavorite="@((bool newState) => ViewModel.ToggleFavoriteAsync(quantity, newState))"
                                  OnFromUnitChanged="@((string value) => ViewModel.SelectedFromUnit = value)"
                                  OnToUnitChanged="@((string value) => ViewModel.SelectedToUnit = value)"
                                  OnConvert="@ViewModel.ConvertUnitsAsync" />

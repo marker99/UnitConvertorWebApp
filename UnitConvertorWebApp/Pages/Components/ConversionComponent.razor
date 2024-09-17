@@ -7,7 +7,7 @@
     <MudCardContent>
         <div class="d-flex justify-space-between align-center mb-4">
             <MudText Typo="Typo.h5">@TitleOfCard</MudText>
-            <FavoriteButton IsFavorite="@IsFavorite" OnToggleFavorite="@OnToggleFavorite" />
+            <FavoriteButton IsFavorite="@IsFavorite" OnToggleFavorite="@HandleToggleFavorite" />
         </div>
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">
@@ -48,10 +48,15 @@
     [Parameter] public bool IsFavorite { get; set; }
     [Parameter] public double InputValue { get; set; }
     [Parameter] public string ResultText { get; set; }
-    [Parameter] public EventCallback OnToggleFavorite { get; set; }
+    [Parameter] public EventCallback<bool> OnToggleFavorite { get; set; }
     [Parameter] public EventCallback<string> OnFromUnitChanged { get; set; }
     [Parameter] public EventCallback<string> OnToUnitChanged { get; set; }
     [Parameter] public EventCallback OnConvert { get; set; }
+
+    private Task HandleToggleFavorite(bool newState)
+    {
+        return OnToggleFavorite.InvokeAsync(newState);
+    }
 
     private Task HandleFromUnitChanged(string value)
     {

@@ -7,7 +7,9 @@
     <MudCardContent>
         <div class="d-flex justify-space-between align-center mb-4">
             <MudText Typo="Typo.h5">@TitleOfCard</MudText>
-            <FavoriteButton IsFavorite="@IsFavorite" OnToggleFavorite="@HandleToggleFavorite" />
+            <FavoriteButton IsFavorite="@IsFavorite"
+                            OnToggleFavorite="@HandleToggleFavorite"
+                            Quantity="@TitleOfCard" />
         </div>
         <MudGrid Spacing="4" Justify="Justify.Center">
             <MudItem xs="12" sm="3" md="3">

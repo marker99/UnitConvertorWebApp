@@ -26,7 +26,7 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 2000;
     config.SnackbarConfiguration.HideTransitionDuration = 200;
     config.SnackbarConfiguration.ShowTransitionDuration = 200;
-    config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+    config.SnackbarConfiguration.SnackbarVariant = Variant.Outlined;
 });
 builder.Services.AddMudExtensions();
 builder.Services.AddBlazoredLocalStorage();

@@ -14,8 +14,9 @@
 @if (ViewModel.FilteredQuantities != null)
 {
     <MudItem Class="mb-2">
-        <Virtualize Items="ViewModel.FilteredQuantities" Context="quantity">
-            <ConversionComponent TitleOfCard="@quantity"
+        <Virtualize Items="ViewModel.FilteredQuantities" Context="quantity" ItemSize="250" OverscanCount="5">
+            <ConversionComponent @key="quantity"
+                                 TitleOfCard="@quantity"
                                  Units="@ViewModel.AvailableUnits.ToList()"
                                  SelectedFromUnit="@ViewModel.SelectedFromUnit"
                                  SelectedToUnit="@ViewModel.SelectedToUnit"

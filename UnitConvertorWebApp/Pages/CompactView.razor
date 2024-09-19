@@ -22,10 +22,12 @@
             <MudList Dense="true" T="string" Color="Color.Primary">
                 @foreach (var quantity in ViewModel.FilteredQuantities)
                 {
-                    <MudListItem @onclick="(() => ViewModel.SelectQuantityAsync(quantity))" Selected="@(ViewModel.SelectedQuantity == quantity)" Class="@(ViewModel.SelectedQuantity == quantity ? "selected-item" : "")">
+                    <MudListItem @key="quantity" @onclick="(() => ViewModel.SelectQuantityAsync(quantity))" Selected="@(ViewModel.SelectedQuantity == quantity)" Class="@(ViewModel.SelectedQuantity == quantity ? "selected-item" : "")">
                         <div class="d-flex justify-space-between align-center w-100">
                             <MudText>@quantity</MudText>
-                            <FavoriteButton IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)" OnToggleFavorite="@((newState) => ViewModel.ToggleFavoriteAsync(quantity, newState))" />
+                            <FavoriteButton IsFavorite="@ViewModel.FavoritesMap.GetValueOrDefault(quantity)"
+                                            OnToggleFavorite="@((newState) => ViewModel.ToggleFavoriteAsync(quantity, newState))"
+                                            Quantity="@quantity" />
                         </div>
                     </MudListItem>
                 }

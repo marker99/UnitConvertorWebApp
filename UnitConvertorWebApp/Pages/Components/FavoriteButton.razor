@@ -1,29 +1,39 @@
 ﻿@using MudBlazor
 @inject ISnackbar Snackbar
 
-<MudIconButton Icon="@GetIcon()" Color="@GetColor()" OnClick="ToggleFavorite"
-               Size="Size.Small" title="@(IsFavorite ? "Unfavorite" : "Favorite")" />
+<MudIconButton Icon="@GetIcon()" Color="@GetColor()" OnClick="ToggleFavorite" Size="Size.Small" title="@(IsFavorite ? "Unfavorite" : "Favorite")" />
 
 @code {
-    [Parameter] public bool IsFavorite { get; set; }
-    [Parameter] public EventCallback<bool> OnToggleFavorite { get; set; }
+    [Parameter]
+    public bool IsFavorite { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnToggleFavorite { get; set; }
+
+    [Parameter]
+    public string Quantity { get; set; }
 
     private async Task ToggleFavorite()
     {
+        bool newState = !IsFavorite;
+
         if (OnToggleFavorite.HasDelegate)
         {
-            await OnToggleFavorite.InvokeAsync(!IsFavorite);
-
-            // Show snackbar based on the new state
-            if (!IsFavorite)
-            {
-                // Snackbar.Add("Favorited!", Severity.Success);
-            }
-            else
-            {
-                // Snackbar.Add("Unfavorited!", Severity.Info);
-            }
+            await OnToggleFavorite.InvokeAsync(newState);
         }
+
+        // Single snackbar logic
+        var message = newState ? $"Favorited {Quantity}!" : $"Unfavorited {Quantity}!";
+        var icon = newState ? Icons.Material.Filled.Star : Icons.Material.Filled.StarOutline;
+
+        Snackbar.Add(message, Severity.Normal, config =>
+        {
+            config.Icon = icon;
+            config.IconColor = Color.Warning;
+            config.IconSize = Size.Medium;
+        });
+
+        IsFavorite = newState;
     }
 
     private string GetIcon() => IsFavorite ? Icons.Material.Filled.Star : Icons.Material.Filled.StarOutline;

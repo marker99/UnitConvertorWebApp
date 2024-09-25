@@ -3,6 +3,9 @@
 This project is a Unit Converter web application built using Blazor and MudBlazor. 
 The app allows users to convert various units to different units. It features search functionality, smooth UI with list selection, and easy-to-read conversion results.
 
+Hosted using Azure Static Web Apps: 
+[Link](https://ashy-pebble-0bff9cd10.5.azurestaticapps.net/)
+
 ## Features
 - Dynamic Unit Conversion: Convert quantities such as length, mass, time, etc.
 - Searchable Lists: Easily search and filter through quantities and units.
